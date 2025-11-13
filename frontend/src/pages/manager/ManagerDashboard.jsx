@@ -1675,7 +1675,7 @@ export default function ManagerDashboard() {
             <button
               key={section}
               onClick={() => setActiveSection(section)}
-              className={`px-3 sm:px-4 py-2 rounded-t-lg font-medium text-sm sm:text-base transition-colors ${
+              className={`px-3 sm:px-4 py-2 rounded font-medium text-sm sm:text-base transition-colors ${
                 activeSection === section
                   ? 'bg-white text-indigo-700'
                   : 'bg-white/10 text-white/80 hover:bg-white/20'
