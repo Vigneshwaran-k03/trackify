@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getToken, getUserName } from '../../utils/authStorage';
+// Import the background image
+import backgroundImage from '../../assets/background.png';
 
 export default function AdminKraLog() {
   const [logs, setLogs] = useState([]);
@@ -127,99 +129,154 @@ export default function AdminKraLog() {
   }, [grouped, tab, adminName, dept, manager, employee]);
 
   const renderChanges = (json) => {
-    if (!json) return <span>No details</span>;
+    if (!json) return <span className="text-white/70">No details</span>;
     try {
       const obj = typeof json === 'string' ? JSON.parse(json) : json;
       const keys = Object.keys(obj);
-      if (!keys.length) return <span>No details</span>;
+      if (!keys.length) return <span className="text-white/70">No details</span>;
       return (
-        <ul className="list-disc pl-5 space-y-1">
+        <ul className="list-disc pl-5 space-y-1 text-white/90">
           {keys.map((k) => (
-            <li key={k}><span className="font-medium">{k}</span>: {String(obj[k]?.from ?? 'null')} → {String(obj[k]?.to ?? 'null')}</li>
+            <li key={k}><span className="font-semibold text-white">{k}</span>: {String(obj[k]?.from ?? 'null')} → {String(obj[k]?.to ?? 'null')}</li>
           ))}
         </ul>
       );
     } catch {
-      return <span>Invalid</span>;
+      return <span className="text-red-400">Invalid</span>;
     }
   };
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-semibold">KRA Log</h1>
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-2 ml-2">
-            <button className={`px-3 py-1 rounded border ${tab==='mine' ? 'bg-indigo-600 text-white' : ''}`} onClick={()=> { setTab('mine'); setManager(''); setEmployee(''); }}>My Changes</button>
-            <button className={`px-3 py-1 rounded border ${tab==='manager' ? 'bg-indigo-600 text-white' : ''}`} onClick={()=> { setTab('manager'); }}>Manager Changes</button>
-          </div>
-          <select className="border rounded px-2 py-1" value={dept} onChange={(e)=>{ setDept(e.target.value); setManager(''); setEmployee(''); }}>
-            <option value="">Select dept</option>
-            {departments.map(d => (
-              <option key={d.id || d.name} value={d.name || d}>{d.name || d}</option>
-            ))}
-          </select>
-          {(tab === 'mine' || tab === 'manager') && (
-            <select className="border rounded px-2 py-1" value={manager} onChange={(e)=>{ setManager(e.target.value); if (tab==='mine') setEmployee(''); }}>
-              <option value="">Select manager {tab==='mine' ? '(optional)' : ''}</option>
-              {managers.map(m => (
-                <option key={m.user_id || m.id || m.email} value={m.name}>{m.name}</option>
+    // Wrapper div for background image
+    <div
+      className="min-h-screen w-full bg-cover bg-center bg-fixed"
+      style={{ backgroundImage: `url(${backgroundImage})` }}
+    >
+      {/* Content container with padding */}
+      <div className="max-w-6xl mx-auto py-8 px-4">
+        {/* Header/Filter bar with glassmorphism */}
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 rounded-lg bg-white/20 backdrop-blur-sm p-4 shadow-md border border-white/30">
+          <h1 className="text-3xl font-bold text-white shadow-sm mb-4 md:mb-0">KRA Log</h1>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2">
+              <button
+                className={`px-3 py-1 rounded border border-white/50 text-white/90 transition-colors ${tab==='mine' ? 'bg-white/90 text-indigo-700 font-semibold border-white' : 'hover:bg-white/20'}`}
+                onClick={()=> { setTab('mine'); setManager(''); setEmployee(''); }}
+              >
+                My Changes
+              </button>
+              <button
+                className={`px-3 py-1 rounded border border-white/50 text-white/90 transition-colors ${tab==='manager' ? 'bg-white/90 text-indigo-700 font-semibold border-white' : 'hover:bg-white/20'}`}
+                onClick={()=> { setTab('manager'); }}
+              >
+                Manager Changes
+              </button>
+            </div>
+            <select
+              className="border border-white/50 rounded px-2 py-1 bg-white/30 text-gray-900 focus:outline-none focus:ring-2 focus:ring-white"
+              value={dept}
+              onChange={(e)=>{ setDept(e.target.value); setManager(''); setEmployee(''); }}
+            >
+              <option value="">Select dept</option>
+              {departments.map(d => (
+                <option key={d.id || d.name} value={d.name || d}>{d.name || d}</option>
               ))}
             </select>
-          )}
-          {tab === 'manager' && (
-            <select className="border rounded px-2 py-1" value={employee} onChange={(e)=> setEmployee(e.target.value)}>
-              <option value="">Select employee (optional)</option>
-              {employees.map(emp => (
-                <option key={emp.user_id || emp.id || emp.email} value={emp.name}>{emp.name}</option>
-              ))}
-            </select>
-          )}
-        </div>
-      </div>
-      {loading && <div>Loading...</div>}
-      {error && <div className="text-red-600 mb-3">{error}</div>}
-      {!loading && !groupedFiltered.length && <div>No logs found.</div>}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {groupedFiltered.map(({ kra_id, latest }) => (
-          <div key={`card-${kra_id}`} className="bg-white border rounded p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-lg font-semibold">{latest.kra_name}</div>
-                <div className="text-sm text-gray-600">Dept: {latest.dept || '-'} • Version: v{latest.version}</div>
-                <div className="text-sm text-gray-600">Manager: {latest.manager_name || '-'}</div>
-                <div className="text-sm text-gray-600">Employee: {latest.employee_name || '-'}</div>
-              </div>
-              <div className="text-sm text-gray-600 text-right">
-                <div>Updated By: {latest.updated_by}</div>
-                <div>At: {new Date(latest.updated_at).toLocaleString()}</div>
-              </div>
-            </div>
-            <div className="mt-3">
-              <button className="px-3 py-1 rounded border" onClick={()=> { setModalLog(latest); setShowModal(true); }}>See Changes</button>
-            </div>
-          </div>
-        ))}
-      </div>
-      {showModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white w-full max-w-md rounded shadow p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Changes: {modalLog?.kra_name}</h3>
-              <button className="text-gray-600" onClick={()=> setShowModal(false)}>✕</button>
-            </div>
-            <div className="text-sm text-gray-700 space-y-2">
-              <div>Dept: {modalLog?.dept || '-'}</div>
-              <div>Manager: {modalLog?.manager_name || '-'}</div>
-              <div>Employee: {modalLog?.employee_name || '-'}</div>
-            </div>
-            <div className="mt-3">{renderChanges(modalLog?.changes)}</div>
-            <div className="mt-4 flex justify-end">
-              <button className="px-4 py-2 rounded border" onClick={()=> setShowModal(false)}>Close</button>
-            </div>
+            {(tab === 'mine' || tab === 'manager') && (
+              <select
+                className="border border-white/50 rounded px-2 py-1 bg-white/30 text-gray-900 focus:outline-none focus:ring-2 focus:ring-white"
+                value={manager}
+                onChange={(e)=>{ setManager(e.target.value); if (tab==='mine') setEmployee(''); }}
+              >
+                <option value="">Select manager {tab==='mine' ? '(optional)' : ''}</option>
+                {managers.map(m => (
+                  <option key={m.user_id || m.id || m.email} value={m.name}>{m.name}</option>
+                ))}
+              </select>
+            )}
+            {tab === 'manager' && (
+              <select
+                className="border border-white/50 rounded px-2 py-1 bg-white/30 text-gray-900 focus:outline-none focus:ring-2 focus:ring-white"
+                value={employee}
+                onChange={(e)=> setEmployee(e.target.value)}
+              >
+                <option value="">Select employee (optional)</option>
+                {employees.map(emp => (
+                  <option key={emp.user_id || emp.id || emp.email} value={emp.name}>{emp.name}</option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
-      )}
+
+        {/* Loading / Error / Empty States */}
+        {loading && <div className="text-white text-lg p-4 font-semibold text-center">Loading...</div>}
+        {error && <div className="bg-red-500/80 text-white font-semibold rounded-lg p-3 mb-3 shadow-lg">{error}</div>}
+        {!loading && !error && !groupedFiltered.length && (
+          <div className="text-white/90 text-lg p-4 bg-black/20 rounded-lg text-center backdrop-blur-sm">
+            No logs found matching your criteria.
+          </div>
+        )}
+
+        {/* Card Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {groupedFiltered.map(({ kra_id, latest }) => (
+            // Card with glassmorphism
+            <div key={`card-${kra_id}`} className="bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg p-4 shadow-lg text-white">
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-2">
+                <div>
+                  <div className="text-xl font-bold text-white">{latest.kra_name}</div>
+                  <div className="text-sm text-gray-100">Dept: {latest.dept || '-'} • Version: v{latest.version}</div>
+                  <div className="text-sm text-gray-100">Manager: {latest.manager_name || '-'}</div>
+                  <div className="text-sm text-gray-100">Employee: {latest.employee_name || '-'}</div>
+                </div>
+                <div className="text-sm text-gray-100 text-left sm:text-right flex-shrink-0">
+                  <div>Updated By: {latest.updated_by}</div>
+                  <div>At: {new Date(latest.updated_at).toLocaleString()}</div>
+                </div>
+              </div>
+              <div className="mt-3">
+                <button
+                  className="px-3 py-1 rounded border border-white/50 text-white hover:bg-white/20 transition-colors"
+                  onClick={()=> { setModalLog(latest); setShowModal(true); }}
+                >
+                  See Changes
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Modal with glassmorphism */}
+        {showModal && (
+          // Modal overlay with padding for responsiveness
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+            {/* Modal content */}
+            <div className="bg-white/20 backdrop-blur-md border border-white/30 rounded-lg shadow-xl w-full max-w-md p-6 text-white">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-bold text-white">Changes: {modalLog?.kra_name}</h3>
+                <button className="text-white/80 hover:text-white text-2xl font-bold" onClick={()=> setShowModal(false)}>✕</button>
+              </div>
+              <div className="text-sm text-gray-100 space-y-2">
+                <div>Dept: {modalLog?.dept || '-'}</div>
+                <div>Manager: {modalLog?.manager_name || '-'}</div>
+                <div>Employee: {modalLog?.employee_name || '-'}</div>
+              </div>
+              <div className="mt-3 max-h-60 overflow-y-auto">
+                {renderChanges(modalLog?.changes)}
+              </div>
+              <div className="mt-4 flex justify-end">
+                <button
+                  className="px-4 py-2 rounded border border-white/50 text-white hover:bg-white/20 transition-colors"
+                  onClick={()=> setShowModal(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-
 import { Doughnut, PolarArea, Bar, Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -19,6 +18,11 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarEleme
 import axios from 'axios';
 import { getToken, getRole, getUserName } from '../../utils/authStorage';
 import { exportSectionById, exportTableToCSV, exportTableToExcel } from '../../utils/exportUtils';
+
+// --- IMPORTANT ---
+// Import your background image.
+// You may need to change this path depending on your folder structure.
+import bgImage from '../../assets/background.png';
 
 export default function AdminDashboard() {
   const [userName, setUserName] = useState('');
@@ -79,11 +83,11 @@ export default function AdminDashboard() {
     const withMd = esc.replace(/\[(.+?)\]\s*\((https?:\/\/[^\s)]+)\)/g, (m, label, url) => {
       const safeLabel = label;
       const safeUrl = url;
-      return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 underline">${safeLabel}</a>`;
+      return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="text-indigo-400 underline">${safeLabel}</a>`;
     });
     return withMd.replace(/(?<![\w"'=])(https?:\/\/[^\s)]+)(?![^<]*>)/g, (m, url) => {
       const safeUrl = url;
-      return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 underline">${safeUrl}</a>`;
+      return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="text-indigo-400 underline">${safeUrl}</a>`;
     });
   };
 
@@ -730,25 +734,25 @@ export default function AdminDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kraManagerId, kras, kraDept]);
 
-  if (!userName) return <div>Loading...</div>;
+  if (!userName) return <div className="text-white">Loading...</div>;
 
   const sections = {
     overview: (
       <div id="overview-section" className="space-y-6">
         
-         <div className="relative">
-          <h3 className="text-xl font-semibold">Overview</h3>
+          <div className="relative">
+            <h3 className="text-xl font-semibold text-white">Overview</h3>
                 <button className="px-3 py-2 rounded text-white absolute right-0 -mt-7 bg-gradient-to-r from-blue-800 to-blue-500 disabled:opacity-50" onClick={(e)=>{
                   const btn = e.currentTarget; const menu = btn.nextSibling; if (menu) menu.classList.toggle('hidden');
                 }}>Export All</button>
-                <div className="absolute right-0 mt-1 bg-white border rounded shadow hidden">
-                  <button className="block w-full text-left px-3 py-2 hover:bg-gray-50" onClick={()=>exportSectionById('overview-section','overview','png')}>PNG</button>
-                  <button className="block w-full text-left px-3 py-2 hover:bg-gray-50" onClick={()=>exportSectionById('overview-section','overview','jpg')}>JPG</button>
-                  <button className="block w-full text-left px-3 py-2 hover:bg-gray-50" onClick={()=>exportSectionById('overview-section','overview','pdf')}>PDF</button>
+                <div className="absolute right-0 mt-1 bg-white border rounded shadow hidden z-10">
+                  <button className="block w-full text-left px-3 py-2 hover:bg-gray-50 text-black" onClick={()=>exportSectionById('overview-section','overview','png')}>PNG</button>
+                  <button className="block w-full text-left px-3 py-2 hover:bg-gray-50 text-black" onClick={()=>exportSectionById('overview-section','overview','jpg')}>JPG</button>
+                  <button className="block w-full text-left px-3 py-2 hover:bg-gray-50 text-black" onClick={()=>exportSectionById('overview-section','overview','pdf')}>PDF</button>
                 </div>
               </div>
         {/* Company Trend Analysis (first in overview) */}
-        <div className="bg-[#0b1020] rounded-lg p-4 md:p-5 shadow relative overflow-hidden">
+        <div className="bg-white/10 backdrop-blur-md rounded-lg p-4 md:p-5 shadow-lg border border-white/20 relative overflow-hidden">
           <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(1200px 400px at 20% -10%, rgba(0,255,255,0.10), transparent), radial-gradient(800px 300px at 120% 20%, rgba(0,128,255,0.12), transparent), radial-gradient(1000px 500px at 50% 120%, rgba(0,255,128,0.08), transparent)' }} />
           <div className="relative flex items-center justify-between mb-3">
             <div>
@@ -756,7 +760,7 @@ export default function AdminDashboard() {
               <div className="text-white text-lg font-semibold">Company Performance — {ovFilter.year}</div>
             </div>
             <div className="flex items-center gap-2">
-              <input type="number" className="p-1.5 rounded bg-white/10 text-white w-24" value={ovFilter.year} onChange={(e)=>setOvFilter(prev=>({ ...prev, year: Number(e.target.value)||new Date().getFullYear() }))} />
+              <input type="number" className="p-1.5 rounded bg-white/10 text-white w-24 border border-white/20" value={ovFilter.year} onChange={(e)=>setOvFilter(prev=>({ ...prev, year: Number(e.target.value)||new Date().getFullYear() }))} />
               <div className={`text-sm font-semibold ${companyTrendDelta >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{companyTrendDelta >= 0 ? '▲' : '▼'} {Math.abs(companyTrendDelta)}</div>
             </div>
           </div>
@@ -790,8 +794,8 @@ export default function AdminDashboard() {
                   maintainAspectRatio: false,
                   plugins: { legend: { display: false }, tooltip: { intersect: false, mode: 'index' } },
                   scales: {
-                    x: { grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { color: '#cbd5e1' } },
-                    y: { suggestedMin: 0, suggestedMax: 100, grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { color: '#cbd5e1' } }
+                    x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#cbd5e1' } },
+                    y: { suggestedMin: 0, suggestedMax: 100, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#cbd5e1' } }
                   },
                   animation: { duration: 0 }
                 }}
@@ -802,18 +806,18 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div id="company-performance" className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xl font-semibold">Company Performance</h3>
-            <div className="flex items-center gap-2">
-              <select className="p-2 border rounded" value={ovFilter.mode} onChange={(e)=>setOvFilter(prev=>({ ...prev, mode: e.target.value }))}>
-                <option value="monthly">Monthly</option>
-                <option value="yearly">Yearly</option>
+        <div id="company-performance" className="bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-6 border border-white/20 text-white">
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <h3 className="text-xl font-semibold text-white">Company Performance</h3>
+            <div className="flex items-center gap-2 flex-wrap">
+              <select className="p-2 border border-white/30 rounded bg-white/5 text-white" value={ovFilter.mode} onChange={(e)=>setOvFilter(prev=>({ ...prev, mode: e.target.value }))}>
+                <option value="monthly" className="text-black">Monthly</option>
+                <option value="yearly" className="text-black">Yearly</option>
               </select>
-              <input type="number" className="p-2 border rounded w-24" value={ovFilter.year} onChange={(e)=>setOvFilter(prev=>({ ...prev, year: Number(e.target.value) }))} />
+              <input type="number" className="p-2 border border-white/30 rounded bg-white/5 text-white w-24" value={ovFilter.year} onChange={(e)=>setOvFilter(prev=>({ ...prev, year: Number(e.target.value) }))} />
               {ovFilter.mode==='monthly' && (
-                <select className="p-2 border rounded" value={ovFilter.month} onChange={(e)=>setOvFilter(prev=>({ ...prev, month: Number(e.target.value) }))}>
-                  {Array.from({length:12},(_,i)=>i+1).map(m=> <option key={m} value={m}>{m}</option>)}
+                <select className="p-2 border border-white/30 rounded bg-white/5 text-white" value={ovFilter.month} onChange={(e)=>setOvFilter(prev=>({ ...prev, month: Number(e.target.value) }))}>
+                  {Array.from({length:12},(_,i)=>i+1).map(m=> <option key={m} value={m} className="text-black">{m}</option>)}
                 </select>
               )}
              <button className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500 disabled:opacity-50" onClick={()=>exportSectionById('company-performance','pdf')}>Export PDF</button>
@@ -833,7 +837,7 @@ export default function AdminDashboard() {
                     const x = (left + right) / 2;
                     const y = (top + bottom) / 2;
                     ctx.save();
-                    ctx.fillStyle = '#0f5fceff';
+                    ctx.fillStyle = '#ffffff'; // Changed text color
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.font = '600 14px sans-serif';
@@ -862,8 +866,15 @@ export default function AdminDashboard() {
                     options={{
                       responsive:true,
                       maintainAspectRatio:false,
-                      plugins:{ legend:{ display:true, position:'bottom', align:'center' } },
-                      scales:{ r:{ suggestedMin:0, suggestedMax:100, grid: { color:'#e5e7eb' }, angleLines:{ color:'#e5e7eb' } } }
+                      plugins:{ legend:{ display:true, position:'bottom', align:'center', labels: { color: '#ffffff' } } }, // Added label color
+                      scales:{ r:{ 
+                        suggestedMin:0, 
+                        suggestedMax:100, 
+                        grid: { color:'rgba(255,255,255,0.2)' }, // Changed grid color
+                        angleLines:{ color:'rgba(255,255,255,0.2)' }, // Changed angle line color
+                        ticks: { backdropColor: 'rgba(0,0,0,0.5)', color: '#ffffff' }, // Added tick color
+                        pointLabels: { color: '#ffffff' } // Added point label color
+                      }}
                     }}
                     plugins={[centerText]}
                   />
@@ -872,7 +883,7 @@ export default function AdminDashboard() {
               
               })()}
               </div>
-              <div className="mt-3 text-center text-base md:text-lg font-semibold">Department Performance</div>
+              <div className="mt-3 text-center text-base md:text-lg font-semibold text-white">Department Performance</div>
             </div>
             <div id="overview-company-chart" className="w-full">
               <div className="relative w-full h-[320px] md:h-[380px] lg:h-[420px]">
@@ -947,7 +958,7 @@ export default function AdminDashboard() {
                       ctx.restore();
                       // Center percentage text
                       ctx.save();
-                      ctx.fillStyle = '#111827';
+                      ctx.fillStyle = '#FFFFFF'; // Changed text color
                       ctx.font = '600 50px sans-serif';
                       ctx.textAlign = 'center';
                       ctx.textBaseline = 'middle';
@@ -958,54 +969,63 @@ export default function AdminDashboard() {
                 };
                 return (
                   <Doughnut
-                    data={{ labels:['Avg','Remaining'], datasets:[{ data:[Math.max(0, Math.min(100, ovCompanyAverage||0)), Math.max(0, 100 - Math.max(0, Math.min(100, ovCompanyAverage||0)))], backgroundColor:['#f0ad73ff','#e5e7eb'], borderWidth:0, cutout:'70%' }] }}
-                    options={{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:true, position:'bottom', align:'center' } } }}
+                    data={{ labels:['Avg','Remaining'], datasets:[{ data:[Math.max(0, Math.min(100, ovCompanyAverage||0)), Math.max(0, 100 - Math.max(0, Math.min(100, ovCompanyAverage||0)))], backgroundColor:['#f0ad73ff','rgba(255,255,255,0.2)'], borderWidth:0, cutout:'70%' }] }} // Changed remaining color
+                    options={{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:true, position:'bottom', align:'center', labels: { color: '#ffffff' } } } }} // Added label color
                     plugins={[liquidFill]}
                   />
                 );
               })()}
               </div>
-              <div className="mt-2 text-center text-base md:text-lg font-semibold">Company Performance</div>
+              <div className="mt-2 text-center text-base md:text-lg font-semibold text-white">Company Performance</div>
 
             </div>
           </div>
         </div>
-      <div id="overview-progress-chart" className="bg-white p-6 rounded-lg shadow">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-xl font-semibold">Company Progress</h3>
-          <div className="flex items-center gap-2">
-            <select className="p-2 border rounded" value={hbFilter.mode} onChange={(e)=>setHbFilter(prev=>({ ...prev, mode: e.target.value }))}>
-              <option value="monthly">Monthly</option>
-              <option value="yearly">Yearly</option>
+      <div id="overview-progress-chart" className="bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-6 border border-white/20 text-white">
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <h3 className="text-xl font-semibold text-white">Company Progress</h3>
+          <div className="flex items-center gap-2 flex-wrap">
+            <select className="p-2 border border-white/30 rounded bg-white/5 text-white" value={hbFilter.mode} onChange={(e)=>setHbFilter(prev=>({ ...prev, mode: e.target.value }))}>
+              <option value="monthly" className="text-black">Monthly</option>
+              <option value="yearly" className="text-black">Yearly</option>
             </select>
-            <input type="number" className="p-2 border rounded w-24" value={hbFilter.year} onChange={(e)=>setHbFilter(prev=>({ ...prev, year: Number(e.target.value) }))} />
+            <input type="number" className="p-2 border border-white/30 rounded bg-white/5 text-white w-24" value={hbFilter.year} onChange={(e)=>setHbFilter(prev=>({ ...prev, year: Number(e.target.value) }))} />
             {hbFilter.mode==='monthly' && (
-              <select className="p-2 border rounded" value={hbFilter.month} onChange={(e)=>setHbFilter(prev=>({ ...prev, month: Number(e.target.value) }))}>
-                {Array.from({length:12},(_,i)=>i+1).map(m=> <option key={m} value={m}>{m}</option>)}
+              <select className="p-2 border border-white/30 rounded bg-white/5 text-white" value={hbFilter.month} onChange={(e)=>setHbFilter(prev=>({ ...prev, month: Number(e.target.value) }))}>
+                {Array.from({length:12},(_,i)=>i+1).map(m=> <option key={m} value={m} className="text-black">{m}</option>)}
               </select>
             )}
             <button className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500 disabled:opacity-50" onClick={()=>exportSectionById('overview-progress-chart','company-progress','pdf')}>Export PDF</button>
           </div>
         </div>
-        <div className="flex items-center gap-2 mb-3">
-          <select className="p-2 border rounded" value={hbDept} onChange={(e)=>{ setHbDept(e.target.value); setHbManagerId(''); }}>
-            <option value="__all__">All</option>
-            {(depts||[]).map(d=> <option key={d.id} value={d.name}>{d.name}</option>)}
+        <div className="flex items-center gap-2 mb-3 flex-wrap">
+          <select className="p-2 border border-white/30 rounded bg-white/5 text-white" value={hbDept} onChange={(e)=>{ setHbDept(e.target.value); setHbManagerId(''); }}>
+            <option value="__all__" className="text-black">All</option>
+            {(depts||[]).map(d=> <option key={d.id} value={d.name} className="text-black">{d.name}</option>)}
           </select>
-          <select className="p-2 border rounded disabled:bg-gray-100" disabled={!hbDept || hbDept==='__all__'} value={hbManagerId} onChange={(e)=> setHbManagerId(e.target.value)}>
-            <option value="">Select Manager</option>
-            {(hbManagers||[]).map(m=> <option key={m.user_id} value={m.user_id}>{m.name}</option>)}
+          <select className="p-2 border border-white/30 rounded bg-white/5 text-white disabled:bg-gray-800/50" disabled={!hbDept || hbDept==='__all__'} value={hbManagerId} onChange={(e)=> setHbManagerId(e.target.value)}>
+            <option value="" className="text-black">Select Manager</option>
+            {(hbManagers||[]).map(m=> <option key={m.user_id} value={m.user_id} className="text-black">{m.name}</option>)}
           </select>
-          <input type="number" className="p-2 border rounded w-28" value={hbFilter.year} onChange={(e)=> setHbFilter(prev=>({ ...prev, year: Number(e.target.value)||new Date().getFullYear() }))} />
+          <input type="number" className="p-2 border border-white/30 rounded bg-white/5 text-white w-28" value={hbFilter.year} onChange={(e)=> setHbFilter(prev=>({ ...prev, year: Number(e.target.value)||new Date().getFullYear() }))} />
         </div>
         <div className="h-72">
           {hbSeries.labels.length ? (
             <Bar
               data={{ labels: hbSeries.labels, datasets:[{ label:'Avg Score', data: hbSeries.values, backgroundColor:'rgba(59,130,246,0.3)', borderColor:'#3b82f6' }] }}
-              options={{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ suggestedMin:0, suggestedMax:100 }, y:{ ticks:{ autoSkip:false } } } }}
+              options={{ 
+                indexAxis:'y', 
+                responsive:true, 
+                maintainAspectRatio:false, 
+                plugins:{ legend:{ display:false } }, 
+                scales:{ 
+                  x:{ suggestedMin:0, suggestedMax:100, ticks: { color: '#ffffff' }, grid: { color: 'rgba(255,255,255,0.2)' } }, // Added tick and grid color
+                  y:{ ticks:{ autoSkip:false, color: '#ffffff' }, grid: { color: 'rgba(255,255,255,0.2)' } } // Added tick and grid color
+                } 
+              }}
             />
           ) : (
-            <div className="text-gray-600">No data.</div>
+            <div className="text-gray-300">No data.</div>
           )}
           </div>
         </div>
@@ -1013,45 +1033,45 @@ export default function AdminDashboard() {
     ),
     performance: (
       <div id="performance-section" className="space-y-6">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xl font-semibold">Performance</h3>
-            <div className="flex items-center gap-2">
-              <select className="p-2 border rounded" value={perfFilter.mode} onChange={(e)=>setPerfFilter(prev=>({ ...prev, mode: e.target.value }))}>
-                <option value="monthly">Monthly</option>
-                <option value="yearly">Yearly</option>
+        <div className="bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-6 border border-white/20 text-white">
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <h3 className="text-xl font-semibold text-white">Performance</h3>
+            <div className="flex items-center gap-2 flex-wrap">
+              <select className="p-2 border border-white/30 rounded bg-white/5 text-white" value={perfFilter.mode} onChange={(e)=>setPerfFilter(prev=>({ ...prev, mode: e.target.value }))}>
+                <option value="monthly" className="text-black">Monthly</option>
+                <option value="yearly" className="text-black">Yearly</option>
               </select>
-              <input type="number" className="p-2 border rounded w-24" value={perfFilter.year} onChange={(e)=>setPerfFilter(prev=>({ ...prev, year: Number(e.target.value) }))} />
+              <input type="number" className="p-2 border border-white/30 rounded bg-white/5 text-white w-24" value={perfFilter.year} onChange={(e)=>setPerfFilter(prev=>({ ...prev, year: Number(e.target.value) }))} />
               {perfFilter.mode==='monthly' && (
-                <select className="p-2 border rounded" value={perfFilter.month} onChange={(e)=>setPerfFilter(prev=>({ ...prev, month: Number(e.target.value) }))}>
-                  {Array.from({length:12},(_,i)=>i+1).map(m=> <option key={m} value={m}>{m}</option>)}
+                <select className="p-2 border border-white/30 rounded bg-white/5 text-white" value={perfFilter.month} onChange={(e)=>setPerfFilter(prev=>({ ...prev, month: Number(e.target.value) }))}>
+                  {Array.from({length:12},(_,i)=>i+1).map(m=> <option key={m} value={m} className="text-black">{m}</option>)}
                 </select>
               )}
               <button className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500 disabled:opacity-50" onClick={()=>exportSectionById('performance-section','performance','pdf')}>Export PDF</button>
             </div>
           </div>
           <div className="flex items-center gap-2 mb-4 flex-wrap">
-            <select className="p-2 border rounded" value={perfDept} onChange={(e)=> setPerfDept(e.target.value)}>
-              <option value="">Select Department</option>
-              {(depts||[]).map(d=> <option key={d.id} value={d.name}>{d.name}</option>)}
+            <select className="p-2 border border-white/30 rounded bg-white/5 text-white" value={perfDept} onChange={(e)=> setPerfDept(e.target.value)}>
+              <option value="" className="text-black">Select Department</option>
+              {(depts||[]).map(d=> <option key={d.id} value={d.name} className="text-black">{d.name}</option>)}
             </select>
-            <select className="p-2 border rounded disabled:bg-gray-100" disabled={!perfDept} value={perfManagerId} onChange={(e)=> setPerfManagerId(e.target.value)}>
-              <option value="">Select Manager</option>
-              {(perfManagers||[]).map(m=> <option key={m.user_id} value={m.user_id}>{m.name}</option>)}
+            <select className="p-2 border border-white/30 rounded bg-white/5 text-white disabled:bg-gray-800/50" disabled={!perfDept} value={perfManagerId} onChange={(e)=> setPerfManagerId(e.target.value)}>
+              <option value="" className="text-black">Select Manager</option>
+              {(perfManagers||[]).map(m=> <option key={m.user_id} value={m.user_id} className="text-black">{m.name}</option>)}
             </select>
-            <select className="p-2 border rounded disabled:bg-gray-100" disabled={!perfDept} value={perfEmployeeId} onChange={(e)=> setPerfEmployeeId(e.target.value)}>
-              <option value="">Select Employee</option>
-              {(perfEmployees||[]).map(e=> <option key={e.user_id} value={e.user_id}>{e.name}</option>)}
+            <select className="p-2 border border-white/30 rounded bg-white/5 text-white disabled:bg-gray-800/50" disabled={!perfDept} value={perfEmployeeId} onChange={(e)=> setPerfEmployeeId(e.target.value)}>
+              <option value="" className="text-black">Select Employee</option>
+              {(perfEmployees||[]).map(e=> <option key={e.user_id} value={e.user_id} className="text-black">{e.name}</option>)}
             </select>
           </div>
 
           {!perfDept && (
-            <div className="text-gray-600">Select a department to view performance.</div>
+            <div className="text-gray-300">Select a department to view performance.</div>
           )}
 
           {/* Dept card */}
           {perfDept && (
-            <div className="border rounded p-4 mt-4">
+            <div className="border border-white/20 rounded p-4 mt-4 bg-white/5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
                 <div className="max-w-[220px] h-48 mx-auto">
                   {(() => {
@@ -1060,14 +1080,14 @@ export default function AdminDashboard() {
                       afterDatasetsDraw(chart) {
                         const { ctx, chartArea, data } = chart; if (!chartArea) return; const { left,right,top,bottom }=chartArea; const x=(left+right)/2; const y=(top+bottom)/2;
                         const ds = data?.datasets?.[0]; const v = Array.isArray(ds?.data) ? Number(ds.data[0]||0) : 0; const pct = Math.round(Math.max(0, Math.min(100, v)));
-                        ctx.save(); ctx.fillStyle='#111827'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font='600 20px sans-serif'; ctx.fillText(`${pct}%`, x, y); ctx.restore();
+                        ctx.save(); ctx.fillStyle='#FFFFFF'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font='600 20px sans-serif'; ctx.fillText(`${pct}%`, x, y); ctx.restore();
                       }
                     };
                     const val = Math.max(0, Math.min(100, perfDeptAvg||0));
                     return (
                       <Doughnut
                         key={`dept-${perfDept}-${perfFilter.mode}-${perfFilter.year}-${perfFilter.month}-${val}`}
-                        data={{ labels:['Avg','Remaining'], datasets:[{ data:[val, 100-val], backgroundColor:['#3b82f6','#e5e7eb'], borderWidth:0, cutout:'70%' }] }}
+                        data={{ labels:['Avg','Remaining'], datasets:[{ data:[val, 100-val], backgroundColor:['#3b82f6','rgba(255,255,255,0.1)'], borderWidth:0, cutout:'70%' }] }}
                         options={{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } } }}
                         redraw
                         plugins={[center]}
@@ -1076,7 +1096,7 @@ export default function AdminDashboard() {
                   })()}
                 </div>
                 <div className="text-left">
-                  <div className="text-lg font-semibold mb-1">{perfDept.charAt(0).toUpperCase() + perfDept.slice(1).toLowerCase()} Performance</div>
+                  <div className="text-lg font-semibold mb-1 text-white">{perfDept.charAt(0).toUpperCase() + perfDept.slice(1).toLowerCase()} Performance</div>
                 </div>
               </div>
             </div>
@@ -1084,7 +1104,7 @@ export default function AdminDashboard() {
 
           {/* Manager card: separate division */}
           {perfDept && perfManagerId && (
-            <div className="border rounded p-4 mt-4">
+            <div className="border border-white/20 rounded p-4 mt-4 bg-white/5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
                 <div className="max-w-[220px] h-48 mx-auto">
                   {(() => {
@@ -1093,21 +1113,21 @@ export default function AdminDashboard() {
                       afterDatasetsDraw(chart) {
                         const { ctx, chartArea, data } = chart; if (!chartArea) return; const { left,right,top,bottom }=chartArea; const x=(left+right)/2; const y=(top+bottom)/2;
                         const ds = data?.datasets?.[0]; const v = Array.isArray(ds?.data) ? Number(ds.data[0]||0) : 0; const pct = Math.round(Math.max(0, Math.min(100, v)));
-                        ctx.save(); ctx.fillStyle='#111827'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font='600 20px sans-serif'; ctx.fillText(`${pct}%`, x, y); ctx.restore();
+                        ctx.save(); ctx.fillStyle='#FFFFFF'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font='600 20px sans-serif'; ctx.fillText(`${pct}%`, x, y); ctx.restore();
                       }
                     };
                     const val = Math.max(0, Math.min(100, perfManagerAvg||0));
                     return (
                       <Doughnut
                         key={`mgr-${perfManagerId}-${perfDept}-${perfFilter.mode}-${perfFilter.year}-${perfFilter.month}-${val}`}
-                        data={{ labels:['Avg','Remaining'], datasets:[{ data:[val, 100-val], backgroundColor:['#6366f1','#e5e7eb'], borderWidth:0, cutout:'70%' }] }}
+                        data={{ labels:['Avg','Remaining'], datasets:[{ data:[val, 100-val], backgroundColor:['#6366f1','rgba(255,255,255,0.1)'], borderWidth:0, cutout:'70%' }] }}
                         options={{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } } }}
                         redraw
                         plugins={[center]}
                       />
                     );
                   })()}
-                  <div className="text-center mt-2 text-lg">Manager Performance</div>
+                  <div className="text-center mt-2 text-lg text-white">Manager Performance</div>
                 </div>
                 <div className="h-64">
                   {perfMgrKraBars.labels.length ? (
@@ -1117,7 +1137,10 @@ export default function AdminDashboard() {
                         responsive:true,
                         maintainAspectRatio:false,
                         plugins:{ legend:{ display:false } },
-                        scales:{ y:{ suggestedMin:0, suggestedMax:100 } },
+                        scales:{ 
+                          y:{ suggestedMin:0, suggestedMax:100, ticks: { color: '#ffffff' }, grid: { color: 'rgba(255,255,255,0.2)' } },
+                          x:{ ticks: { color: '#ffffff' }, grid: { color: 'rgba(255,255,255,0.2)' } }
+                        },
                         animation:{
                           duration:800,
                           easing:'easeOutCubic',
@@ -1127,7 +1150,7 @@ export default function AdminDashboard() {
                       }}
                     />
                   ) : (
-                    <div className="text-gray-600">No KRA data.</div>
+                    <div className="text-gray-300">No KRA data.</div>
                   )}
                 </div>
               </div>
@@ -1136,7 +1159,7 @@ export default function AdminDashboard() {
 
           {/* Employee card: separate division */}
           {perfDept && perfEmployeeId && (
-            <div className="border rounded p-4 mt-4">
+            <div className="border border-white/20 rounded p-4 mt-4 bg-white/5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
                 <div className="max-w-[220px] h-48 mx-auto">
                   {(() => {
@@ -1145,21 +1168,21 @@ export default function AdminDashboard() {
                       afterDatasetsDraw(chart) {
                         const { ctx, chartArea, data } = chart; if (!chartArea) return; const { left,right,top,bottom }=chartArea; const x=(left+right)/2; const y=(top+bottom)/2;
                         const ds = data?.datasets?.[0]; const v = Array.isArray(ds?.data) ? Number(ds.data[0]||0) : 0; const pct = Math.round(Math.max(0, Math.min(100, v)));
-                        ctx.save(); ctx.fillStyle='#111827'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font='600 20px sans-serif'; ctx.fillText(`${pct}%`, x, y); ctx.restore();
+                        ctx.save(); ctx.fillStyle='#FFFFFF'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font='600 20px sans-serif'; ctx.fillText(`${pct}%`, x, y); ctx.restore();
                       }
                     };
                     const val = Math.max(0, Math.min(100, perfEmployeeAvg||0));
                     return (
                       <Doughnut
                         key={`emp-${perfEmployeeId}-${perfDept}-${perfFilter.mode}-${perfFilter.year}-${perfFilter.month}-${val}`}
-                        data={{ labels:['Avg','Remaining'], datasets:[{ data:[val, 100-val], backgroundColor:['#10b981','#e5e7eb'], borderWidth:0, cutout:'70%' }] }}
+                        data={{ labels:['Avg','Remaining'], datasets:[{ data:[val, 100-val], backgroundColor:['#10b981','rgba(255,255,255,0.1)'], borderWidth:0, cutout:'70%' }] }}
                         options={{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } } }}
                         redraw
                         plugins={[center]}
                       />
                     );
                   })()}
-                  <div className="text-center mt-2 text-lg">Employee Performance</div>
+                  <div className="text-center mt-2 text-lg text-white">Employee Performance</div>
                 </div>
                 <div className="h-64">
                   {perfEmpKraBars.labels.length ? (
@@ -1169,7 +1192,10 @@ export default function AdminDashboard() {
                         responsive:true,
                         maintainAspectRatio:false,
                         plugins:{ legend:{ display:false } },
-                        scales:{ y:{ suggestedMin:0, suggestedMax:100 } },
+                        scales:{ 
+                          y:{ suggestedMin:0, suggestedMax:100, ticks: { color: '#ffffff' }, grid: { color: 'rgba(255,255,255,0.2)' } },
+                          x:{ ticks: { color: '#ffffff' }, grid: { color: 'rgba(255,255,255,0.2)' } }
+                        },
                         animation:{
                           duration:800,
                           easing:'easeOutCubic',
@@ -1179,7 +1205,7 @@ export default function AdminDashboard() {
                       }}
                     />
                   ) : (
-                    <div className="text-gray-600">No KRA data.</div>
+                    <div className="text-gray-300">No KRA data.</div>
                   )}
                 </div>
               </div>
@@ -1189,30 +1215,30 @@ export default function AdminDashboard() {
       </div>
     ),
     departments: (
-      <div id="departments-section" className="bg-white p-6 text-black rounded-lg shadow mb-8">
+      <div id="departments-section" className="bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-6 border border-white/20 text-white mb-8">
         <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
           <div className="flex items-center gap-2">
             <select
               value={selectedDept}
               onChange={handleDeptChange}
-              className="p-2 border border-gray-300 rounded-md"
+              className="p-2 border border-white/30 rounded bg-white/5 text-white"
             >
-              <option value="">Select Department</option>
-              <option value="__all__">All</option>
+              <option value="" className="text-black">Select Department</option>
+              <option value="__all__" className="text-black">All</option>
               {depts.map((dept) => (
-                <option key={dept.id} value={dept.name}>{dept.name}</option>
+                <option key={dept.id} value={dept.name} className="text-black">{dept.name}</option>
               ))}
             </select>
           </div>
-          <div className="flex items-center gap-2">
-            <select className="p-2 border rounded" value={depFilter.mode} onChange={(e)=>setDepFilter(prev=>({ ...prev, mode: e.target.value }))}>
-              <option value="monthly">Monthly</option>
-              <option value="yearly">Yearly</option>
+          <div className="flex items-center gap-2 flex-wrap">
+            <select className="p-2 border border-white/30 rounded bg-white/5 text-white" value={depFilter.mode} onChange={(e)=>setDepFilter(prev=>({ ...prev, mode: e.target.value }))}>
+              <option value="monthly" className="text-black">Monthly</option>
+              <option value="yearly" className="text-black">Yearly</option>
             </select>
-            <input type="number" className="p-2 border rounded w-24" value={depFilter.year} onChange={(e)=>setDepFilter(prev=>({ ...prev, year: Number(e.target.value) }))} />
+            <input type="number" className="p-2 border border-white/30 rounded bg-white/5 text-white w-24" value={depFilter.year} onChange={(e)=>setDepFilter(prev=>({ ...prev, year: Number(e.target.value) }))} />
             {depFilter.mode==='monthly' && (
-              <select className="p-2 border rounded" value={depFilter.month} onChange={(e)=>setDepFilter(prev=>({ ...prev, month: Number(e.target.value) }))}>
-                {Array.from({length:12},(_,i)=>i+1).map(m=> <option key={m} value={m}>{m}</option>)}
+              <select className="p-2 border border-white/30 rounded bg-white/5 text-white" value={depFilter.month} onChange={(e)=>setDepFilter(prev=>({ ...prev, month: Number(e.target.value) }))}>
+                {Array.from({length:12},(_,i)=>i+1).map(m=> <option key={m} value={m} className="text-black">{m}</option>)}
               </select>
             )}
             <button className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500 disabled:opacity-50" onClick={()=>exportSectionById('departments-section','departments','pdf')}>Export PDF</button>
@@ -1220,44 +1246,44 @@ export default function AdminDashboard() {
         </div>
         {selectedDept && selectedDept !== '__all__' ? (
           <div className="grid grid-cols-1 items-center justify-center lg:grid-cols-4 gap-6">
-            <div className="bg-gray-50 rounded p-4  border">
-              <div className="text-sm text-gray-500 mb-1">Managers</div>
-              <div className="text-2xl font-semibold">{deptCounts.managers}</div>
+            <div className="bg-white/5 backdrop-blur-sm rounded p-4 border border-white/20">
+              <div className="text-sm text-gray-300 mb-1">Managers</div>
+              <div className="text-2xl font-semibold text-white">{deptCounts.managers}</div>
             </div>
-            <div className="bg-gray-50 rounded p-4 border">
-              <div className="text-sm text-gray-500 mb-1">Employees</div>
-              <div className="text-2xl font-semibold">{deptCounts.employees}</div>
+            <div className="bg-white/5 backdrop-blur-sm rounded p-4 border border-white/20">
+              <div className="text-sm text-gray-300 mb-1">Employees</div>
+              <div className="text-2xl font-semibold text-white">{deptCounts.employees}</div>
             </div>
-            <div className="bg-gray-50 rounded p-4 border">
-              <div className="text-sm text-gray-500 mb-1">KRAs</div>
-              <div className="text-2xl font-semibold">{deptCounts.kras}</div>
+            <div className="bg-white/5 backdrop-blur-sm rounded p-4 border border-white/20">
+              <div className="text-sm text-gray-300 mb-1">KRAs</div>
+              <div className="text-2xl font-semibold text-white">{deptCounts.kras}</div>
             </div>
-            <div className="bg-gray-50 rounded p-4 h-24 border">
-              <div className="text-sm text-gray-500 mb-1">KPIs</div>
-              <div className="text-2xl font-semibold">{deptCounts.kpis}</div>
+            <div className="bg-white/5 backdrop-blur-sm rounded p-4 h-24 border border-white/20">
+              <div className="text-sm text-gray-300 mb-1">KPIs</div>
+              <div className="text-2xl font-semibold text-white">{deptCounts.kpis}</div>
             </div>
             <div className="lg:col-span-5 flex flex-col items-center justify-center">
               <div className="max-w-sm">
                 <Doughnut
-                  data={{ labels:['Avg','Remaining'], datasets:[{ data:[Math.max(0, Math.min(100, depDeptAverages[selectedDept]||0)), Math.max(0, 100 - Math.max(0, Math.min(100, depDeptAverages[selectedDept]||0)))], backgroundColor:['#10b981','#e5e7eb'], borderWidth:0, cutout:'70%' }] }}
+                  data={{ labels:['Avg','Remaining'], datasets:[{ data:[Math.max(0, Math.min(100, depDeptAverages[selectedDept]||0)), Math.max(0, 100 - Math.max(0, Math.min(100, depDeptAverages[selectedDept]||0)))], backgroundColor:['#10b981','rgba(255,255,255,0.1)'], borderWidth:0, cutout:'70%' }] }}
                   options={{ responsive:true, plugins:{ legend:{ display:false } } }}
                 />
               </div>
-              <div className="text-center mt-2 text-xl font-semibold">{selectedDept} - {depDeptAverages[selectedDept]||0}%</div>
+              <div className="text-center mt-2 text-xl font-semibold text-white">{selectedDept} - {depDeptAverages[selectedDept]||0}%</div>
             </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {(depts||[]).map(d => (
-              <div key={d.id} className="border rounded p-4">
-                <div className="font-medium mb-2">{d.name} - {depDeptAverages[d.name]||0}%</div>
+              <div key={d.id} className="border border-white/20 rounded p-4 bg-white/5">
+                <div className="font-medium mb-2 text-white">{d.name} - {depDeptAverages[d.name]||0}%</div>
                 <div className="max-w-xs">
                   <Doughnut
-                    data={{ labels:['Avg','Remaining'], datasets:[{ data:[Math.max(0, Math.min(100, depDeptAverages[d.name]||0)), Math.max(0, 100 - Math.max(0, Math.min(100, depDeptAverages[d.name]||0)))], backgroundColor:['#60a5fa','#e5e7eb'], borderWidth:0, cutout:'70%' }] }}
+                    data={{ labels:['Avg','Remaining'], datasets:[{ data:[Math.max(0, Math.min(100, depDeptAverages[d.name]||0)), Math.max(0, 100 - Math.max(0, Math.min(100, depDeptAverages[d.name]||0)))], backgroundColor:['#60a5fa','rgba(255,255,255,0.1)'], borderWidth:0, cutout:'70%' }] }}
                     options={{ responsive:true, plugins:{ legend:{ display:false } } }}
                   />
                 </div>
-                <div className="text-center mt-2 text-lg">{depDeptAverages[d.name]||0}%</div>
+                <div className="text-center mt-2 text-lg text-white">{depDeptAverages[d.name]||0}%</div>
               </div>
             ))}
           </div>
@@ -1265,38 +1291,38 @@ export default function AdminDashboard() {
       </div>
     ),
     kras: (
-      <div id="kras-section" className="bg-white p-6 text-black rounded-lg shadow mb-8">
+      <div id="kras-section" className="bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-6 border border-white/20 text-white mb-8">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-semibold">KRA Management</h3>
+          <h3 className="text-xl font-semibold text-white">KRA Management</h3>
           <div className="relative">
             <button className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500 disabled:opacity-50" onClick={(e)=>{ const m=e.currentTarget.nextSibling; if (m) m.classList.toggle('hidden'); }}>Export</button>
-            <div className="absolute right-0 mt-1 bg-white border rounded shadow hidden">
-              <button className="block w-full text-left px-3 py-2 hover:bg-gray-50" onClick={()=>handleExportReport('csv')}>CSV</button>
-              <button className="block w-full text-left px-3 py-2 hover:bg-gray-50" onClick={()=>handleExportReport('excel')}>Excel</button>
-              <button className="block w-full text-left px-3 py-2 hover:bg-gray-50" onClick={()=>handleExportReport('pdf')}>PDF</button>
+            <div className="absolute right-0 mt-1 bg-white border rounded shadow hidden z-10">
+              <button className="block w-full text-left px-3 py-2 hover:bg-gray-50 text-black" onClick={()=>handleExportReport('csv')}>CSV</button>
+              <button className="block w-full text-left px-3 py-2 hover:bg-gray-50 text-black" onClick={()=>handleExportReport('excel')}>Excel</button>
+              <button className="block w-full text-left px-3 py-2 hover:bg-gray-50 text-black" onClick={()=>handleExportReport('pdf')}>PDF</button>
             </div>
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Department</label>
-            <select className="w-full p-2 border rounded" value={kraDept} onChange={(e)=> setKraDept(e.target.value)}>
-              <option value="">Select Department</option>
-              {(depts||[]).map(d=> <option key={d.id} value={d.name}>{d.name}</option>)}
+            <label className="block text-sm font-medium mb-1 text-gray-200">Department</label>
+            <select className="w-full p-2 border border-white/30 rounded bg-white/5 text-white" value={kraDept} onChange={(e)=> setKraDept(e.target.value)}>
+              <option value="" className="text-black">Select Department</option>
+              {(depts||[]).map(d=> <option key={d.id} value={d.name} className="text-black">{d.name}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Manager</label>
-            <select className="w-full p-2 border rounded disabled:bg-gray-100" disabled={!kraDept} value={kraManagerId} onChange={(e)=> setKraManagerId(e.target.value)}>
-              <option value="">Select Manager</option>
-              {(kraManagers||[]).map(m=> <option key={m.user_id} value={m.user_id}>{m.name}</option>)}
+            <label className="block text-sm font-medium mb-1 text-gray-200">Manager</label>
+            <select className="w-full p-2 border border-white/30 rounded bg-white/5 text-white disabled:bg-gray-800/50" disabled={!kraDept} value={kraManagerId} onChange={(e)=> setKraManagerId(e.target.value)}>
+              <option value="" className="text-black">Select Manager</option>
+              {(kraManagers||[]).map(m=> <option key={m.user_id} value={m.user_id} className="text-black">{m.name}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Employee</label>
-            <select className="w-full p-2 border rounded disabled:bg-gray-100" disabled={!kraDept} value={kraEmployeeName} onChange={(e)=> setKraEmployeeName(e.target.value)}>
-              <option value="">Select Employee</option>
-              {(kraEmployees||[]).map(e=> <option key={e.name} value={e.name}>{e.name}</option>)}
+            <label className="block text-sm font-medium mb-1 text-gray-200">Employee</label>
+            <select className="w-full p-2 border border-white/30 rounded bg-white/5 text-white disabled:bg-gray-800/50" disabled={!kraDept} value={kraEmployeeName} onChange={(e)=> setKraEmployeeName(e.target.value)}>
+              <option value="" className="text-black">Select Employee</option>
+              {(kraEmployees||[]).map(e=> <option key={e.name} value={e.name} className="text-black">{e.name}</option>)}
             </select>
           </div>
           <div className="flex items-end">
@@ -1309,12 +1335,12 @@ export default function AdminDashboard() {
           </div>
           <div className="flex items-end">
             <div className="relative w-full">
-              <button type="button" onClick={()=> setExportOpen(prev=>!prev)} className="w-full px-4 py-2 rounded border bg-white hover:bg-gray-50">Export</button>
+              <button type="button" onClick={()=> setExportOpen(prev=>!prev)} className="w-full px-4 py-2 rounded border border-white/30 bg-white/5 text-white hover:bg-white/10">Export</button>
               {exportOpen && (
                 <div className="absolute right-0 mt-1 w-40 bg-white border rounded shadow z-10">
-                  <button className="block w-full text-left px-3 py-2 hover:bg-gray-50" onClick={()=>{ handleExportReport('pdf'); setExportOpen(false); }}>PDF</button>
-                  <button className="block w-full text-left px-3 py-2 hover:bg-gray-50" onClick={()=>{ handleExportReport('excel'); setExportOpen(false); }}>Excel</button>
-                  <button className="block w-full text-left px-3 py-2 hover:bg-gray-50" onClick={()=>{ handleExportReport('csv'); setExportOpen(false); }}>CSV</button>
+                  <button className="block w-full text-left px-3 py-2 hover:bg-gray-50 text-black" onClick={()=>{ handleExportReport('pdf'); setExportOpen(false); }}>PDF</button>
+                  <button className="block w-full text-left px-3 py-2 hover:bg-gray-50 text-black" onClick={()=>{ handleExportReport('excel'); setExportOpen(false); }}>Excel</button>
+                  <button className="block w-full text-left px-3 py-2 hover:bg-gray-50 text-black" onClick={()=>{ handleExportReport('csv'); setExportOpen(false); }}>CSV</button>
                 </div>
               )}
             </div>
@@ -1335,28 +1361,28 @@ export default function AdminDashboard() {
             <div className="overflow-x-auto">
               <table id="kra-table" className="w-full">
                 <thead>
-                  <tr className="border-b">
-                    <th className="text-left p-2">KRA Name</th>
-                    <th className="text-left p-2">Score</th>
-                    <th className="text-left p-2">Manager</th>
-                    <th className="text-left p-2">Employee</th>
-                    <th className="text-left p-2">Action</th>
+                  <tr className="border-b border-white/20">
+                    <th className="text-left p-2 text-white">KRA Name</th>
+                    <th className="text-left p-2 text-white">Score</th>
+                    <th className="text-left p-2 text-white">Manager</th>
+                    <th className="text-left p-2 text-white">Employee</th>
+                    <th className="text-left p-2 text-white">Action</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="text-gray-200">
                   {filtered.map((kra) => (
-                    <tr key={kra.kra_id} className="border-b">
+                    <tr key={kra.kra_id} className="border-b border-white/20">
                       <td className="p-2 font-medium">{kra.name}</td>
                       <td className="p-2">{(typeof kra.overall_score === 'number' ? `${kra.overall_score}%` : '-') }</td>
                       <td className="p-2">{kra.manager_name || '-'}</td>
                       <td className="p-2">{kra.employee_name || '-'}</td>
                       <td className="p-2">
-                        <button onClick={() => openKraModal(kra)} className="text-blue-600 hover:text-blue-800 text-sm">View</button>
+                        <button onClick={() => openKraModal(kra)} className="text-blue-400 hover:text-blue-300 text-sm">View</button>
                       </td>
                     </tr>
                   ))}
                   {filtered.length === 0 && (
-                    <tr><td className="p-3 text-gray-600" colSpan="5">No KRAs found for the selected filters.</td></tr>
+                    <tr><td className="p-3 text-gray-300" colSpan="5">No KRAs found for the selected filters.</td></tr>
                   )}
                 </tbody>
               </table>
@@ -1366,25 +1392,25 @@ export default function AdminDashboard() {
 
         {kraModalOpen && (
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-            <div className="bg-white w-full max-w-2xl rounded shadow p-6">
+            <div className="bg-gray-900/50 backdrop-blur-lg border border-white/20 text-white w-full max-w-2xl rounded shadow-lg p-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">KRA KPIs{kraModalState.kra ? ` — ${kraModalState.kra.name}` : ''}</h3>
-                <button onClick={closeKraModal} className="text-gray-600 hover:text-gray-800">✕</button>
+                <h3 className="text-lg font-semibold text-white">KRA KPIs{kraModalState.kra ? ` — ${kraModalState.kra.name}` : ''}</h3>
+                <button onClick={closeKraModal} className="text-gray-300 hover:text-white">✕</button>
               </div>
               {kraModalState.loading ? (
-                <div className="p-6 text-center text-gray-600">Loading...</div>
+                <div className="p-6 text-center text-gray-300">Loading...</div>
               ) : (
                 <div className="space-y-4">
                   {kraModalState.aggregate && (
-                    <div className="bg-gray-50 border rounded p-3">
-                      <div className="text-sm text-gray-600">Aggregate Score</div>
-                      <div className="text-2xl font-semibold">{kraModalState.aggregate.percentage ?? 0}% <span className="text-sm text-gray-500">({kraModalState.aggregate.count || 0} KPIs)</span></div>
+                    <div className="bg-white/5 border border-white/20 rounded p-3">
+                      <div className="text-sm text-gray-300">Aggregate Score</div>
+                      <div className="text-2xl font-semibold text-white">{kraModalState.aggregate.percentage ?? 0}% <span className="text-sm text-gray-400">({kraModalState.aggregate.count || 0} KPIs)</span></div>
                     </div>
                   )}
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b">
+                        <tr className="border-b border-white/20">
                           <th className="text-left p-2">KPI</th>
                           <th className="text-left p-2">Method</th>
                           <th className="text-left p-2">Target</th>
@@ -1396,7 +1422,7 @@ export default function AdminDashboard() {
                       </thead>
                       <tbody>
                         {(kraModalState.kpis || []).map(k => (
-                          <tr key={k.id} className="border-b">
+                          <tr key={k.id} className="border-b border-white/20">
                             <td className="p-2 font-medium">{k.name}</td>
                             <td className="p-2">{k.scoring_method}</td>
                             <td className="p-2">{k.target ?? '-'}</td>
@@ -1407,13 +1433,13 @@ export default function AdminDashboard() {
                           </tr>
                         ))}
                         {(!kraModalState.kpis || kraModalState.kpis.length === 0) && (
-                          <tr><td className="p-3 text-gray-600" colSpan="7">No KPIs found.</td></tr>
+                          <tr><td className="p-3 text-gray-300" colSpan="7">No KPIs found.</td></tr>
                         )}
                       </tbody>
                     </table>
                   </div>
                   <div className="flex justify-end gap-2">
-                    <button className="px-3 py-2 rounded border" onClick={()=> closeKraModal()}>Close</button>
+                    <button className="px-3 py-2 rounded border border-white/30 text-white" onClick={()=> closeKraModal()}>Close</button>
                   </div>
                 </div>
               )}
@@ -1423,27 +1449,27 @@ export default function AdminDashboard() {
       </div>
     ),
     review: (
-      <div className="bg-white p-6 text-black rounded-lg shadow mb-8">
-        <h3 className="text-xl font-semibold mb-4">Add Manager Review</h3>
+      <div className="bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-6 border border-white/20 text-white mb-8">
+        <h3 className="text-xl font-semibold mb-4 text-white">Add Manager Review</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Department</label>
-            <select className="w-full p-2 border rounded" value={revDept} onChange={(e)=>{ setRevDept(e.target.value); }}>
-              <option value="">-- Select --</option>
-              {(depts||[]).map(d=> <option key={d.id} value={d.name}>{d.name}</option>)}
+            <label className="block text-sm font-medium mb-1 text-gray-200">Department</label>
+            <select className="w-full p-2 border border-white/30 rounded bg-white/5 text-white" value={revDept} onChange={(e)=>{ setRevDept(e.target.value); }}>
+              <option value="" className="text-black">-- Select --</option>
+              {(depts||[]).map(d=> <option key={d.id} value={d.name} className="text-black">{d.name}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Select Manager</label>
-            <select className="w-full p-2 border rounded disabled:bg-gray-100" disabled={!revDept} value={revManagerId} onChange={(e)=>{ setRevManagerId(e.target.value); setRevKraId(''); }}>
-              <option value="">-- Select --</option>
-              {(revDeptManagers||[]).map(m=> <option key={m.user_id} value={m.user_id}>{m.name}</option>)}
+            <label className="block text-sm font-medium mb-1 text-gray-200">Select Manager</label>
+            <select className="w-full p-2 border border-white/30 rounded bg-white/5 text-white disabled:bg-gray-800/50" disabled={!revDept} value={revManagerId} onChange={(e)=>{ setRevManagerId(e.target.value); setRevKraId(''); }}>
+              <option value="" className="text-black">-- Select --</option>
+              {(revDeptManagers||[]).map(m=> <option key={m.user_id} value={m.user_id} className="text-black">{m.name}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Select KRA (Assigned to manager)</label>
-            <select className="w-full p-2 border rounded disabled:bg-gray-100" disabled={!revDept || !revManagerId} value={revKraId} onChange={(e)=> setRevKraId(e.target.value)}>
-              <option value="">-- Select --</option>
+            <label className="block text-sm font-medium mb-1 text-gray-200">Select KRA (Assigned to manager)</label>
+            <select className="w-full p-2 border border-white/30 rounded bg-white/5 text-white disabled:bg-gray-800/50" disabled={!revDept || !revManagerId} value={revKraId} onChange={(e)=> setRevKraId(e.target.value)}>
+              <option value="" className="text-black">-- Select --</option>
               {(function(){
                 const manager = (revDeptManagers||[]).find(m=> String(m.user_id)===String(revManagerId));
                 const managerName = manager?.name || '';
@@ -1451,18 +1477,18 @@ export default function AdminDashboard() {
                   .filter(k => String(k.dept || '') === String(revDept))
                   .filter(k => managerName ? String(k.manager_name || '').toLowerCase() === String(managerName).toLowerCase() : true)
                   .map(k => (
-                    <option key={k.kra_id} value={k.kra_id}>{k.name}</option>
+                    <option key={k.kra_id} value={k.kra_id} className="text-black">{k.name}</option>
                   ));
               })()}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Score (Percentage)</label>
-            <div className="flex items-center gap-2"><input type="range" min="0" max="100" value={revScore===''?0:Number(revScore)} onChange={(e)=>setRevScore(e.target.value)} /><span className="w-12 text-right text-sm">{revScore||0}%</span></div>
+            <label className="block text-sm font-medium mb-1 text-gray-200">Score (Percentage)</label>
+            <div className="flex items-center gap-2"><input type="range" min="0" max="100" value={revScore===''?0:Number(revScore)} onChange={(e)=>setRevScore(e.target.value)} /><span className="w-12 text-right text-sm text-white">{revScore||0}%</span></div>
           </div>
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium mb-1">Comments</label>
-            <textarea className="w-full p-2 border rounded" rows={2} value={revComment} onChange={(e)=>setRevComment(e.target.value)} />
+            <label className="block text-sm font-medium mb-1 text-gray-200">Comments</label>
+            <textarea className="w-full p-2 border border-white/30 rounded bg-white/5 text-white placeholder-gray-400" rows={2} value={revComment} onChange={(e)=>setRevComment(e.target.value)} />
           </div>
         </div>
         <div className="flex justify-end mb-6">
@@ -1471,18 +1497,18 @@ export default function AdminDashboard() {
 
         {revKraId && (
           <div className="mb-8">
-            <h4 className="text-lg font-semibold mb-2">Active KPIs for selected KRA</h4>
+            <h4 className="text-lg font-semibold mb-2 text-white">Active KPIs for selected KRA</h4>
             <div className="space-y-3">
               {(revActiveKpis||[]).map(k => (
-                <div key={k.id} className="border rounded p-3">
-                  <div className="font-medium">{k.name}</div>
-                  <div className="text-sm text-gray-700">Target: {k.target != null ? `${k.target}%` : '-'}</div>
-                  <div className="text-sm text-gray-700">Achieved: {typeof k.percentage === 'number' ? `${k.percentage}%` : (typeof k.score === 'number' ? `${k.score}%` : '-')}</div>
-                  <div className="text-sm text-gray-700">Comments: <span dangerouslySetInnerHTML={{ __html: k.comments ? renderCommentHtml(k.comments) : '-' }} /></div>
+                <div key={k.id} className="border border-white/20 rounded p-3 bg-white/5">
+                  <div className="font-medium text-white">{k.name}</div>
+                  <div className="text-sm text-gray-300">Target: {k.target != null ? `${k.target}%` : '-'}</div>
+                  <div className="text-sm text-gray-300">Achieved: {typeof k.percentage === 'number' ? `${k.percentage}%` : (typeof k.score === 'number' ? `${k.score}%` : '-')}</div>
+                  <div className="text-sm text-gray-300">Comments: <span dangerouslySetInnerHTML={{ __html: k.comments ? renderCommentHtml(k.comments) : '-' }} /></div>
                 </div>
               ))}
               {(!revActiveKpis || revActiveKpis.length === 0) && (
-                <div className="p-3 text-gray-600 border rounded">No active KPIs.</div>
+                <div className="p-3 text-gray-300 border border-white/20 rounded bg-white/5">No active KPIs.</div>
               )}
             </div>
           </div>
@@ -1490,41 +1516,41 @@ export default function AdminDashboard() {
 
         <div id="admin-myreviews-section" className="mt-8">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xl font-semibold">My Reviews</h3>
+            <h3 className="text-xl font-semibold text-white">My Reviews</h3>
             <div className="relative">
               <button className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500 disabled:opacity-50" onClick={(e)=>{ const m=e.currentTarget.nextSibling; if (m) m.classList.toggle('hidden'); }}>Export</button>
-              <div className="absolute right-0 mt-1 bg-white border rounded shadow hidden">
-                <button className="block w-full text-left px-3 py-2 hover:bg-gray-50" onClick={()=>exportTableToCSV('#admin-myreviews-table','my-reviews.csv')}>CSV</button>
-                <button className="block w-full text-left px-3 py-2 hover:bg-gray-50" onClick={()=>exportTableToExcel('#admin-myreviews-table','my-reviews.xls')}>Excel</button>
-                <button className="block w-full text-left px-3 py-2 hover:bg-gray-50" onClick={()=>exportSectionById('admin-myreviews-section','my-reviews','pdf')}>PDF</button>
+              <div className="absolute right-0 mt-1 bg-white border rounded shadow hidden z-10">
+                <button className="block w-full text-left px-3 py-2 hover:bg-gray-50 text-black" onClick={()=>exportTableToCSV('#admin-myreviews-table','my-reviews.csv')}>CSV</button>
+                <button className="block w-full text-left px-3 py-2 hover:bg-gray-50 text-black" onClick={()=>exportTableToExcel('#admin-myreviews-table','my-reviews.xls')}>Excel</button>
+                <button className="block w-full text-left px-3 py-2 hover:bg-gray-50 text-black" onClick={()=>exportSectionById('admin-myreviews-section','my-reviews','pdf')}>PDF</button>
               </div>
             </div>
           </div>
           <div className="overflow-x-auto">
             <table id="admin-myreviews-table" className="w-full">
               <thead>
-                <tr className="border-b">
-                  <th className="text-left p-3">KRA</th>
-                  <th className="text-left p-3">Manager</th>
-                  <th className="text-left p-3">Score</th>
-                  <th className="text-left p-3">Comment</th>
-                  <th className="text-left p-3">Reviewed At</th>
-                  <th className="text-left p-3">Actions</th>
+                <tr className="border-b border-white/20">
+                  <th className="text-left p-3 text-white">KRA</th>
+                  <th className="text-left p-3 text-white">Manager</th>
+                  <th className="text-left p-3 text-white">Score</th>
+                  <th className="text-left p-3 text-white">Comment</th>
+                  <th className="text-left p-3 text-white">Reviewed At</th>
+                  <th className="text-left p-3 text-white">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="text-gray-200">
                 {myReviews.map(r => (
-                  <tr key={r.id} className="border-b">
+                  <tr key={r.id} className="border-b border-white/20">
                     <td className="p-3">{r.kra_name}</td>
                     <td className="p-3">{r.employee_name}</td>
                     <td className="p-3">{r.score}</td>
                     <td className="p-3"><span dangerouslySetInnerHTML={{ __html: r.comment ? renderCommentHtml(r.comment) : '-' }} /></td>
                     <td className="p-3">{r.review_at ? new Date(r.review_at).toLocaleDateString() : '-'}</td>
-                    <td className="p-3"><button className="text-blue-600 hover:text-blue-800 text-sm" onClick={()=>openEditReview(r)}>Update</button></td>
+                    <td className="p-3"><button className="text-blue-400 hover:text-blue-300 text-sm" onClick={()=>openEditReview(r)}>Update</button></td>
                   </tr>
                 ))}
                 {myReviews.length===0 && (
-                  <tr><td className="p-4 text-gray-600" colSpan="6">No reviews yet.</td></tr>
+                  <tr><td className="p-4 text-gray-300" colSpan="6">No reviews yet.</td></tr>
                 )}
               </tbody>
             </table>
@@ -1533,23 +1559,23 @@ export default function AdminDashboard() {
 
         {revEditOpen && (
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-            <div className="bg-white w-full max-w-md rounded shadow p-6">
+            <div className="bg-gray-900/50 backdrop-blur-lg border border-white/20 text-white w-full max-w-md rounded shadow-lg p-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">Update Review</h3>
-                <button onClick={()=>setRevEditOpen(false)} className="text-gray-600 hover:text-gray-800">✕</button>
+                <h3 className="text-lg font-semibold text-white">Update Review</h3>
+                <button onClick={()=>setRevEditOpen(false)} className="text-gray-300 hover:text-white">✕</button>
               </div>
               <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Score (0-100)</label>
-                  <input type="number" min="0" max="100" className="w-full p-2 border rounded" value={revEditForm.score} onChange={(e)=>setRevEditForm(prev=>({ ...prev, score: e.target.value }))} />
+                  <label className="block text-sm font-medium mb-1 text-gray-200">Score (0-100)</label>
+                  <input type="number" min="0" max="100" className="w-full p-2 border border-white/30 rounded bg-white/5 text-white" value={revEditForm.score} onChange={(e)=>setRevEditForm(prev=>({ ...prev, score: e.target.value }))} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Comment</label>
-                  <textarea className="w-full p-2 border rounded" rows={3} value={revEditForm.comment} onChange={(e)=>setRevEditForm(prev=>({ ...prev, comment: e.target.value }))} />
+                  <label className="block text-sm font-medium mb-1 text-gray-200">Comment</label>
+                  <textarea className="w-full p-2 border border-white/30 rounded bg-white/5 text-white" rows={3} value={revEditForm.comment} onChange={(e)=>setRevEditForm(prev=>({ ...prev, comment: e.target.value }))} />
                 </div>
               </div>
               <div className="flex justify-end gap-2 mt-4">
-                <button onClick={()=>setRevEditOpen(false)} className="px-4 py-2 rounded border">Cancel</button>
+                <button onClick={()=>setRevEditOpen(false)} className="px-4 py-2 rounded border border-white/30 text-white">Cancel</button>
                 <button onClick={submitEditReview} className="px-4 py-2 rounded bg-indigo-600 text-white">Update</button>
               </div>
             </div>
@@ -1560,10 +1586,13 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="">
-      <div className="max-w-7xl mx-auto">
+    <div 
+      className="min-h-screen w-full bg-cover bg-fixed bg-center" 
+      style={{ backgroundImage: `url(${bgImage})` }}
+    >
+      <div className="max-w-7xl mx-auto p-4 md:p-8"> {/* Added padding for spacing */}
         {/* Navigation Tabs */}
-        <div className="flex gap-2 mb-8 flex-wrap border-b">
+        <div className="flex gap-2 mb-8 flex-wrap border-b border-white/30">
           {Object.keys(sections).map((section) => (
             <button
               key={section}
@@ -1571,7 +1600,7 @@ export default function AdminDashboard() {
               className={`px-4 py-2 rounded-t-lg font-medium ${
                 activeSection === section
                   ? 'bg-indigo-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  : 'bg-white/10 backdrop-blur-sm text-gray-200 hover:bg-white/20'
               }`}
             >
               {section.charAt(0).toUpperCase() + section.slice(1)}

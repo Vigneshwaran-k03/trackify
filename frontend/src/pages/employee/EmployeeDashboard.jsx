@@ -20,6 +20,10 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { exportChartFromRef, exportSectionById, exportTableToCSV, exportTableToExcel, downloadBlob } from '../../utils/exportUtils';
 
+// --- IMPORTANT ---
+// Import your background image like this
+import backgroundImage from '../../assets/background.png';
+
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend);
 
 export default function EmployeeDashboard() {
@@ -707,12 +711,13 @@ export default function EmployeeDashboard() {
     const withMd = esc.replace(/\[(.+?)\]\s*\((https?:\/\/[^\s)]+)\)/g, (m, label, url) => {
       const safeLabel = label;
       const safeUrl = url;
-      return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 underline">${safeLabel}</a>`;
+      // Updated link color for dark background
+      return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="text-indigo-300 underline">${safeLabel}</a>`;
     });
     // Auto-link bare URLs not already inside an anchor
     return withMd.replace(/(?<![\w"'=])(https?:\/\/[^\s)]+)(?![^<]*>)/g, (m, url) => {
       const safeUrl = url;
-      return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 underline">${safeUrl}</a>`;
+      return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="text-indigo-300 underline">${safeUrl}</a>`;
     });
   };
 
@@ -745,14 +750,38 @@ export default function EmployeeDashboard() {
     const canvas = await html2canvas(el, {
       scale: 2,
       useCORS: true,
-      backgroundColor: '#ffffff',
+      backgroundColor: '#ffffff', // Use white for exports
       onclone: (doc) => {
         const target = doc.getElementById(elId);
         if (!target) return;
+        
+        // Remove gradients and replace with solid color for export
         target.querySelectorAll('.bg-gradient-to-r').forEach((node) => {
           node.classList.remove('bg-gradient-to-r');
           node.style.backgroundImage = 'none';
-          node.style.backgroundColor = '#1e3a8a';
+          node.style.backgroundColor = '#1e3a8a'; // Solid blue fallback
+        });
+        
+        // --- NEW ---
+        // Force text to be black for PDF/Image export readability
+        target.querySelectorAll('*').forEach(node => {
+          if (node.classList.contains('text-white')) {
+            node.style.color = '#000000';
+          }
+          if (node.classList.contains('text-gray-100')) {
+            node.style.color = '#333333';
+          }
+          if (node.classList.contains('text-gray-200')) {
+            node.style.color = '#333333';
+          }
+          if (node.classList.contains('text-cyan-200')) {
+            node.style.color = '#008B8B';
+          }
+        });
+        
+        // Set background to white for all frosted cards
+        target.querySelectorAll('.backdrop-blur-md').forEach(node => {
+           node.style.backgroundColor = '#ffffff';
         });
       },
     });
@@ -760,15 +789,16 @@ export default function EmployeeDashboard() {
   };
 
   const FilterModal = ({ title, filter, setFilter, onClose, allowAllKinds }) => (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-white text-black w-full max-w-lg rounded shadow p-6">
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
+      {/* Updated Modal Card Style */}
+      <div className="bg-white/20 backdrop-blur-md text-white w-full max-w-lg rounded-lg shadow-xl p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">{title}</h3>
-          <button onClick={onClose} className="text-gray-500">✕</button>
+          <h3 className="text-lg font-semibold text-white">{title}</h3>
+          <button onClick={onClose} className="text-gray-100 hover:text-white text-2xl">✕</button>
         </div>
 
-        {/* Employee Trend Analysis */}
-        <div className="bg-[#0b1020] rounded-lg p-4 md:p-5 shadow relative overflow-hidden mb-6">
+        {/* Employee Trend Analysis (darker frosted card) */}
+        <div className="bg-black/20 backdrop-blur-md rounded-lg p-4 md:p-5 shadow relative overflow-hidden mb-6">
           <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(1000px 400px at 20% -10%, rgba(0,255,255,0.10), transparent), radial-gradient(800px 300px at 120% 20%, rgba(0,128,255,0.12), transparent), radial-gradient(1000px 500px at 50% 120%, rgba(0,255,128,0.08), transparent)' }} />
           <div className="relative flex items-center justify-between mb-3">
             <div>
@@ -823,9 +853,9 @@ export default function EmployeeDashboard() {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium mb-1">Type</label>
+            <label className="block text-sm font-medium mb-1 text-gray-100">Type</label>
             <select
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border border-white/30 rounded bg-white/80 text-black"
               value={filter.kind}
               onChange={(e)=>setFilter(prev=>({ ...prev, kind: e.target.value }))}
             >
@@ -849,47 +879,47 @@ export default function EmployeeDashboard() {
           </div>
           {filter.kind === 'date' && (
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-1">Select Date</label>
-              <input type="date" className="w-full p-2 border rounded" value={filter.date} onChange={(e)=>setFilter(prev=>({ ...prev, date: e.target.value }))} />
+              <label className="block text-sm font-medium mb-1 text-gray-100">Select Date</label>
+              <input type="date" className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" value={filter.date} onChange={(e)=>setFilter(prev=>({ ...prev, date: e.target.value }))} />
             </div>
           )}
           {filter.kind === 'weekly' && (
             <>
               <div>
-                <label className="block text-sm font-medium mb-1">Month</label>
-                <select className="w-full p-2 border rounded" value={filter.month} onChange={(e)=>setFilter(prev=>({ ...prev, month: Number(e.target.value) }))}>
+                <label className="block text-sm font-medium mb-1 text-gray-100">Month</label>
+                <select className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" value={filter.month} onChange={(e)=>setFilter(prev=>({ ...prev, month: Number(e.target.value) }))}>
                   {Array.from({length:12},(_,i)=>i+1).map(m=> <option key={m} value={m}>{m}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Year</label>
-                <input type="number" className="w-full p-2 border rounded" value={filter.year} onChange={(e)=>setFilter(prev=>({ ...prev, year: Number(e.target.value) }))} />
+                <label className="block text-sm font-medium mb-1 text-gray-100">Year</label>
+                <input type="number" className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" value={filter.year} onChange={(e)=>setFilter(prev=>({ ...prev, year: Number(e.target.value) }))} />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium mb-1">Week (1-5)</label>
-                <input type="number" min="1" max="5" className="w-full p-2 border rounded" value={filter.week} onChange={(e)=>setFilter(prev=>({ ...prev, week: Number(e.target.value) }))} />
+                <label className="block text-sm font-medium mb-1 text-gray-100">Week (1-5)</label>
+                <input type="number" min="1" max="5" className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" value={filter.week} onChange={(e)=>setFilter(prev=>({ ...prev, week: Number(e.target.value) }))} />
               </div>
             </>
           )}
           {filter.kind === 'monthly' && (
             <>
               <div>
-                <label className="block text-sm font-medium mb-1">Month</label>
-                <select className="w-full p-2 border rounded" value={filter.month} onChange={(e)=>setFilter(prev=>({ ...prev, month: Number(e.target.value) }))}>
+                <label className="block text-sm font-medium mb-1 text-gray-100">Month</label>
+                <select className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" value={filter.month} onChange={(e)=>setFilter(prev=>({ ...prev, month: Number(e.target.value) }))}>
                   {Array.from({length:12},(_,i)=>i+1).map(m=> <option key={m} value={m}>{m}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Year</label>
-                <input type="number" className="w-full p-2 border rounded" value={filter.year} onChange={(e)=>setFilter(prev=>({ ...prev, year: Number(e.target.value) }))} />
+                <label className="block text-sm font-medium mb-1 text-gray-100">Year</label>
+                <input type="number" className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" value={filter.year} onChange={(e)=>setFilter(prev=>({ ...prev, year: Number(e.target.value) }))} />
               </div>
             </>
           )}
           {filter.kind === 'quarterly' && (
             <>
               <div>
-                <label className="block text-sm font-medium mb-1">Quarter</label>
-                <select className="w-full p-2 border rounded" value={filter.quarter} onChange={(e)=>setFilter(prev=>({ ...prev, quarter: Number(e.target.value) }))}>
+                <label className="block text-sm font-medium mb-1 text-gray-100">Quarter</label>
+                <select className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" value={filter.quarter} onChange={(e)=>setFilter(prev=>({ ...prev, quarter: Number(e.target.value) }))}>
                   <option value={1}>Q1</option>
                   <option value={2}>Q2</option>
                   <option value={3}>Q3</option>
@@ -897,15 +927,15 @@ export default function EmployeeDashboard() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Year</label>
-                <input type="number" className="w-full p-2 border rounded" value={filter.year} onChange={(e)=>setFilter(prev=>({ ...prev, year: Number(e.target.value) }))} />
+                <label className="block text-sm font-medium mb-1 text-gray-100">Year</label>
+                <input type="number" className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" value={filter.year} onChange={(e)=>setFilter(prev=>({ ...prev, year: Number(e.target.value) }))} />
               </div>
             </>
           )}
           {filter.kind === 'yearly' && (
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-1">Year</label>
-              <input type="number" className="w-full p-2 border rounded" value={filter.year} onChange={(e)=>setFilter(prev=>({ ...prev, year: Number(e.target.value) }))} />
+              <label className="block text-sm font-medium mb-1 text-gray-100">Year</label>
+              <input type="number" className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" value={filter.year} onChange={(e)=>setFilter(prev=>({ ...prev, year: Number(e.target.value) }))} />
             </div>
           )}
         </div>
@@ -916,16 +946,28 @@ export default function EmployeeDashboard() {
     </div>
   );
 
-  if (!userName) return <div>Loading...</div>;
+  if (!userName) return (
+    <div 
+      className="min-h-screen text-white flex items-center justify-center"
+      style={{
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
+    >
+      Loading...
+    </div>
+  );
 
   const sections = {
     overview: (
       <div id="employee-overview-section">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold">Overview</h3>
+          <h3 className="text-xl font-semibold text-white">Overview</h3>
           <div className="relative">
             <button className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500" onClick={(e)=>{ const m=e.currentTarget.nextSibling; if (m) m.classList.toggle('hidden'); }}>Export</button>
-            <div className="absolute right-0 mt-1 bg-white border rounded shadow hidden z-10">
+            <div className="absolute right-0 mt-1 bg-white border rounded shadow hidden z-10 text-black">
               <button className="block w-full text-left px-3 py-2 hover:bg-gray-50" onClick={()=>exportSectionById('employee-overview-section','employee-overview','pdf')}>PDF</button>
               <button className="block w-full text-left px-3 py-2 hover:bg-gray-50" onClick={()=>exportSectionById('employee-overview-section','employee-overview','png')}>PNG</button>
               <button className="block w-full text-left px-3 py-2 hover:bg-gray-50" onClick={()=>exportSectionById('employee-overview-section','employee-overview','jpg')}>JPG</button>
@@ -933,7 +975,7 @@ export default function EmployeeDashboard() {
           </div>
         </div>
         {/* Employee Trend Analysis (first in overview) */}
-        <div className="bg-[#0b1020] rounded-lg p-4 md:p-5 shadow relative overflow-hidden mb-6">
+        <div className="bg-black/20 backdrop-blur-md rounded-lg p-4 md:p-5 shadow relative overflow-hidden mb-6">
           <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(1000px 400px at 20% -10%, rgba(0,255,255,0.10), transparent), radial-gradient(800px 300px at 120% 20%, rgba(0,128,255,0.12), transparent), radial-gradient(1000px 500px at 50% 120%, rgba(0,255,128,0.08), transparent)' }} />
           <div className="relative flex items-center justify-between mb-3">
             <div>
@@ -941,7 +983,7 @@ export default function EmployeeDashboard() {
               <div className="text-white text-lg font-semibold">My Performance — {empTrendYear}</div>
             </div>
             <div className="flex items-center gap-2">
-              <input type="number" className="p-1.5 rounded bg-white/10 text-white w-24" value={empTrendYear} onChange={(e)=>setEmpTrendYear(Number(e.target.value)||new Date().getFullYear())} />
+              <input type="number" className="p-1.5 rounded bg-white/10 text-white w-24 border border-white/30" value={empTrendYear} onChange={(e)=>setEmpTrendYear(Number(e.target.value)||new Date().getFullYear())} />
               <div className={`text-sm font-semibold ${empTrendDelta >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{empTrendDelta >= 0 ? '▲' : '▼'} {Math.abs(empTrendDelta)}</div>
             </div>
           </div>
@@ -991,18 +1033,18 @@ export default function EmployeeDashboard() {
         </div>
 
         {/* My Performance (Reviews) - Chart */}
-        <div id="my-performance" className="bg-white p-4 rounded shadow mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="font-medium">My Performance (Reviews)</h4>
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-600">Month</label>
-              <select className="p-2 border rounded text-sm" value={perfFilter.month} onChange={(e)=>setPerfFilter(prev=>({ ...prev, month: Number(e.target.value) }))}>
+        <div id="my-performance" className="bg-white/20 backdrop-blur-md p-4 rounded-lg shadow-xl mb-6">
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <h4 className="font-medium text-white">My Performance (Reviews)</h4>
+            <div className="flex items-center gap-2 flex-wrap">
+              <label className="text-sm text-gray-200">Month</label>
+              <select className="p-2 border border-white/30 rounded text-sm bg-white/80 text-black" value={perfFilter.month} onChange={(e)=>setPerfFilter(prev=>({ ...prev, month: Number(e.target.value) }))}>
                 {Array.from({length:12},(_,i)=>i+1).map(m=> <option key={m} value={m}>{m}</option>)}
               </select>
-              <label className="text-sm text-gray-600">Year</label>
-              <input type="number" className="p-2 border rounded text-sm w-24" value={perfFilter.year} onChange={(e)=>setPerfFilter(prev=>({ ...prev, year: Number(e.target.value) }))} />
-              <label className="text-sm text-gray-600">Chart</label>
-              <select className="p-2 border rounded text-sm" value={perfChartType} onChange={(e)=>setPerfChartType(e.target.value)}>
+              <label className="text-sm text-gray-200">Year</label>
+              <input type="number" className="p-2 border border-white/30 rounded text-sm w-24 bg-white/80 text-black" value={perfFilter.year} onChange={(e)=>setPerfFilter(prev=>({ ...prev, year: Number(e.target.value) }))} />
+              <label className="text-sm text-gray-200">Chart</label>
+              <select className="p-2 border border-white/30 rounded text-sm bg-white/80 text-black" value={perfChartType} onChange={(e)=>setPerfChartType(e.target.value)}>
                 <option value="bar">Bar</option>
                 <option value="line">Line</option>
                 <option value="pie">Pie</option>
@@ -1010,7 +1052,7 @@ export default function EmployeeDashboard() {
               <div className="relative">
                   <button onClick={()=>setExpMyPerfOpen(v=>!v)} className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500">Export</button>
                   {expMyPerfOpen && (
-                    <div className="absolute right-0 top-10 bg-white border rounded shadow text-sm z-10">
+                    <div className="absolute right-0 top-10 bg-white border rounded shadow text-sm z-10 text-black">
                       <button className="block px-3 py-2 hover:bg-gray-100 w-full text-left" onClick={()=>{ setExpMyPerfOpen(false); exportSectionById('my-performance','my-performance','pdf'); }}>PDF</button>
                       <button className="block px-3 py-2 hover:bg-gray-100 w-full text-left" onClick={()=>{ setExpMyPerfOpen(false); exportSectionById('my-performance','my-performance','png'); }}>PNG</button>
                       <button className="block px-3 py-2 hover:bg-gray-100 w-full text-left" onClick={()=>{ setExpMyPerfOpen(false); exportSectionById('my-performance','my-performance','jpg'); }}>JPG</button>
@@ -1022,26 +1064,40 @@ export default function EmployeeDashboard() {
           {(()=>{
             const labels = perfKraSeries.labels;
             const values = perfKraSeries.values;
-            if (!labels.length) return <div className="text-gray-600">No reviews for the selected month.</div>;
+            const options = { 
+              responsive:true, 
+              maintainAspectRatio:false, 
+              plugins:{ legend:{ display:false } },
+              scales: {
+                x: { ticks: { color: '#FFF' } },
+                y: { ticks: { color: '#FFF' } }
+              }
+            };
+            const pieOptions = { 
+              responsive:true, 
+              maintainAspectRatio:false, 
+              plugins: { legend: { labels: { color: '#FFF' } } } 
+            };
+            if (!labels.length) return <div className="text-gray-200">No reviews for the selected month.</div>;
             if (perfChartType==='line') return (
-              <div className="h-48"><Line data={{ labels, datasets:[{ label:'Avg Score', data: values, borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,0.3)' }] }} options={{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } } }} /></div>
+              <div className="h-48"><Line data={{ labels, datasets:[{ label:'Avg Score', data: values, borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,0.3)' }] }} options={options} /></div>
             );
             if (perfChartType==='bar') return (
-              <div className="h-48"><Bar data={{ labels, datasets:[{ label:'Avg Score', data: values, backgroundColor:'rgba(59,130,246,0.5)', borderColor:'#3b82f6' }] }} options={{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } } }} /></div>
+              <div className="h-48"><Bar data={{ labels, datasets:[{ label:'Avg Score', data: values, backgroundColor:'rgba(59,130,246,0.5)', borderColor:'#3b82f6' }] }} options={options} /></div>
             );
             return (
-              <div className="h-48"><Pie data={{ labels, datasets:[{ label:'Avg Score', data: values, backgroundColor: labels.map((_,i)=>`hsl(${(i*57)%360} 70% 65%)`) }] }} options={{ maintainAspectRatio:false }} /></div>
+              <div className="h-48"><Pie data={{ labels, datasets:[{ label:'Avg Score', data: values, backgroundColor: labels.map((_,i)=>`hsl(${(i*57)%360} 70% 65%)`) }] }} options={pieOptions} /></div>
             );
           })()}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Block 1: KRA Scores All KRAs */}
-          <div id="b1" className="bg-transparent p-4 rounded shadow">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="font-medium">KRA Scores</h4>
+          <div id="b1" className="bg-white/20 backdrop-blur-md p-4 rounded-lg shadow-xl">
+            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+              <h4 className="font-medium text-white">KRA Scores</h4>
               <div className="flex items-center gap-2">
-                <select value={b1Type} onChange={(e)=>setB1Type(e.target.value)} className="p-2 border rounded text-sm">
+                <select value={b1Type} onChange={(e)=>setB1Type(e.target.value)} className="p-2 border border-white/30 rounded text-sm bg-white/80 text-black">
                   <option value="bar">Bar</option>
                   <option value="line">Line</option>
                   <option value="pie">Pie</option>
@@ -1049,7 +1105,7 @@ export default function EmployeeDashboard() {
                 <div className="relative">
                   <button onClick={()=>setExpB1Open(v=>!v)} className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500">Export</button>
                   {expB1Open && (
-                    <div className="absolute right-0 top-10 bg-white border rounded shadow text-sm z-10">
+                    <div className="absolute right-0 top-10 bg-white border rounded shadow text-sm z-10 text-black">
                       <button className="block px-3 py-2 hover:bg-gray-100 w-full text-left" onClick={()=>{ setExpB1Open(false); exportSectionById('b1','kra-scores','pdf'); }}>PDF</button>
                       <button className="block px-3 py-2 hover:bg-gray-100 w-full text-left" onClick={()=>{ setExpB1Open(false); exportSectionById('b1','kra-scores','png'); }}>PNG</button>
                       <button className="block px-3 py-2 hover:bg-gray-100 w-full text-left" onClick={()=>{ setExpB1Open(false); exportSectionById('b1','kra-scores','jpg'); }}>JPG</button>
@@ -1066,28 +1122,38 @@ export default function EmployeeDashboard() {
                 const arr = active.filter(x=> String(x.kra_id)===String(k.kra_id)).map(x=> typeof x.progress==='number'? x.progress:0);
                 if (!arr.length) return 0; return Math.round(arr.reduce((a,b)=>a+b,0)/arr.length);
               });
+              const options = { 
+                responsive:true, 
+                plugins:{ legend:{ display:false } },
+                scales: {
+                  x: { ticks: { color: '#FFF' } },
+                  y: { ticks: { color: '#FFF' } }
+                }
+              };
+              const pieOptions = { responsive:true, maintainAspectRatio:false, plugins: { legend: { labels: { color: '#FFF' } } } };
+
               if (b1Type === 'line') return (
-                <Line data={{ labels, datasets: [{ label: 'Overall %', data: values, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.3)' }] }} options={{ responsive:true, plugins:{ legend:{ display:false } } }} />
+                <Line data={{ labels, datasets: [{ label: 'Overall %', data: values, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.3)' }] }} options={options} />
               );
               if (b1Type === 'bar') return (
-                <Bar data={{ labels, datasets: [{ label: 'Overall %', data: values, backgroundColor: 'rgba(59,130,246,0.5)', borderColor: '#3b82f6' }] }} options={{ responsive:true, plugins:{ legend:{ display:false } } }} />
+                <Bar data={{ labels, datasets: [{ label: 'Overall %', data: values, backgroundColor: 'rgba(59,130,246,0.5)', borderColor: '#3b82f6' }] }} options={options} />
               );
               return (
-                <div className="h-56"><Pie data={{ labels, datasets: [{ label: 'Overall %', data: values, backgroundColor: labels.map((_,i)=>`hsl(${(i*57)%360} 70% 65%)`) }] }} options={{ maintainAspectRatio:false }} /></div>
+                <div className="h-56"><Pie data={{ labels, datasets: [{ label: 'Overall %', data: values, backgroundColor: labels.map((_,i)=>`hsl(${(i*57)%360} 70% 65%)`) }] }} options={pieOptions} /></div>
               );
             })()}
           </div>
 
           {/* Block 2: KPI Scores for selected KRA */}
-          <div id="b2" className="bg-white p-4 rounded shadow">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="font-medium">KPI Scores (Select KRA)</h4>
-              <div className="flex items-center gap-2">
-                <select value={b2KraId} onChange={(e)=>setB2KraId(e.target.value)} className="p-2 border rounded text-sm">
+          <div id="b2" className="bg-white/20 backdrop-blur-md p-4 rounded-lg shadow-xl">
+            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+              <h4 className="font-medium text-white">KPI Scores (Select KRA)</h4>
+              <div className="flex items-center gap-2 flex-wrap">
+                <select value={b2KraId} onChange={(e)=>setB2KraId(e.target.value)} className="p-2 border border-white/30 rounded text-sm bg-white/80 text-black">
                   <option value="">All</option>
                   {allKras.map(k=> <option key={k.kra_id} value={k.kra_id}>{k.name}</option>)}
                 </select>
-                <select value={b2Type} onChange={(e)=>setB2Type(e.target.value)} className="p-2 border rounded text-sm">
+                <select value={b2Type} onChange={(e)=>setB2Type(e.target.value)} className="p-2 border border-white/30 rounded text-sm bg-white/80 text-black">
                   <option value="pie">Pie</option>
                   <option value="bar">Bar</option>
                   <option value="line">Line</option>
@@ -1095,7 +1161,7 @@ export default function EmployeeDashboard() {
                 <div className="relative">
                   <button onClick={()=>setExpB2Open(v=>!v)} className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500">Export</button>
                   {expB2Open && (
-                    <div className="absolute right-0 top-10 bg-white border rounded shadow text-sm z-10">
+                    <div className="absolute right-0 top-10 bg-white border rounded shadow text-sm z-10 text-black">
                       <button className="block px-3 py-2 hover:bg-gray-100 w-full text-left" onClick={()=>{ setExpB2Open(false); exportSectionById('b2','kpi-scores-selected-kra','pdf'); }}>PDF</button>
                       <button className="block px-3 py-2 hover:bg-gray-100 w-full text-left" onClick={()=>{ setExpB2Open(false); exportSectionById('b2','kpi-scores-selected-kra','png'); }}>PNG</button>
                       <button className="block px-3 py-2 hover:bg-gray-100 w-full text-left" onClick={()=>{ setExpB2Open(false); exportSectionById('b2','kpi-scores-selected-kra','jpg'); }}>JPG</button>
@@ -1114,23 +1180,26 @@ export default function EmployeeDashboard() {
               const list = b2KraId ? active.filter(k=> String(k.kra_id)===String(b2KraId)) : active;
               const labels = list.map(k=>k.name);
               const values = list.map(k=> typeof k.progress==='number'? k.progress:0);
-              if (b2Type==='pie') return <div className="h-56"><Pie data={{ labels, datasets:[{ data: values, backgroundColor: labels.map((_,i)=>`hsl(${(i*83)%360} 70% 65%)`) }] }} options={{ maintainAspectRatio:false }} /></div>
-              if (b2Type==='bar') return <Bar data={{ labels, datasets:[{ label:'%', data: values, backgroundColor: 'rgba(234,88,12,0.4)', borderColor: 'rgb(234,88,12)' }] }} options={{ responsive:true, plugins:{ legend:{ display:false } } }} />
-              return <Line data={{ labels, datasets:[{ label:'%', data: values, borderColor: 'rgb(59,130,246)', backgroundColor: 'rgba(59,130,246,0.3)' }] }} options={{ responsive:true, plugins:{ legend:{ display:false } } }} />
+              const options = { responsive:true, plugins:{ legend:{ display:false } }, scales: { x: { ticks: { color: '#FFF' } }, y: { ticks: { color: '#FFF' } } } };
+              const pieOptions = { responsive:true, maintainAspectRatio:false, plugins: { legend: { labels: { color: '#FFF' } } } };
+
+              if (b2Type==='pie') return <div className="h-56"><Pie data={{ labels, datasets:[{ data: values, backgroundColor: labels.map((_,i)=>`hsl(${(i*83)%360} 70% 65%)`) }] }} options={pieOptions} /></div>
+              if (b2Type==='bar') return <Bar data={{ labels, datasets:[{ label:'%', data: values, backgroundColor: 'rgba(234,88,12,0.4)', borderColor: 'rgb(234,88,12)' }] }} options={options} />
+              return <Line data={{ labels, datasets:[{ label:'%', data: values, borderColor: 'rgb(59,130,246)', backgroundColor: 'rgba(59,130,246,0.3)' }] }} options={options} />
             })()}
           </div>
 
           {/* Block 3: KRA Score with Created-date filter */}
-          <div id="b3" className="bg-white p-4 rounded shadow">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="font-medium">KRA Scores</h4>
-              <div className="flex items-center gap-2">
-                <select value={b3Basis} onChange={(e)=>setB3Basis(e.target.value)} className="p-2 border rounded text-sm">
+          <div id="b3" className="bg-white/20 backdrop-blur-md p-4 rounded-lg shadow-xl">
+            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+              <h4 className="font-medium text-white">KRA Scores</h4>
+              <div className="flex items-center gap-2 flex-wrap">
+                <select value={b3Basis} onChange={(e)=>setB3Basis(e.target.value)} className="p-2 border border-white/30 rounded text-sm bg-white/80 text-black">
                   <option value="created">Created Date</option>
                   <option value="due">Due Date</option>
                   <option value="both">Both</option>
                 </select>
-                <select value={b3Type} onChange={(e)=>setB3Type(e.target.value)} className="p-2 border rounded text-sm">
+                <select value={b3Type} onChange={(e)=>setB3Type(e.target.value)} className="p-2 border border-white/30 rounded text-sm bg-white/80 text-black">
                   <option value="line">Line</option>
                   <option value="bar">Bar</option>
                   <option value="pie">Pie</option>
@@ -1139,7 +1208,7 @@ export default function EmployeeDashboard() {
                 <div className="relative">
                   <button onClick={()=>setExpB3Open(v=>!v)} className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500">Export</button>
                   {expB3Open && (
-                    <div className="absolute right-0 top-10 bg-white border rounded shadow text-sm z-10">
+                    <div className="absolute right-0 top-10 bg-white border rounded shadow text-sm z-10 text-black">
                       <button className="block px-3 py-2 hover:bg-gray-100 w-full text-left" onClick={()=>{ setExpB3Open(false); exportSectionById('b3','kra-scores-created-filter','pdf'); }}>PDF</button>
                       <button className="block px-3 py-2 hover:bg-gray-100 w-full text-left" onClick={()=>{ setExpB3Open(false); exportSectionById('b3','kra-scores-created-filter','png'); }}>PNG</button>
                       <button className="block px-3 py-2 hover:bg-gray-100 w-full text-left" onClick={()=>{ setExpB3Open(false); exportSectionById('b3','kra-scores-created-filter','jpg'); }}>JPG</button>
@@ -1167,22 +1236,25 @@ export default function EmployeeDashboard() {
               const values = allKras.map(k=>{
                 const arr = byKra.get(k.kra_id)||[]; if (!arr.length) return 0; return Math.round(arr.reduce((a,b)=>a+b,0)/arr.length);
               });
-              if (b3Type==='pie') return <div className="h-56"><Pie data={{ labels, datasets:[{ data: values, backgroundColor: labels.map((_,i)=>`hsl(${(i*57)%360} 70% 65%)`) }] }} options={{ maintainAspectRatio:false }} /></div>
-              if (b3Type==='bar') return <Bar data={{ labels, datasets:[{ label:'Avg %', data: values, backgroundColor: 'rgba(16,185,129,0.4)', borderColor: 'rgb(16,185,129)' }] }} options={{ responsive:true, plugins:{ legend:{ display:false } } }} />
-              return <Line data={{ labels, datasets:[{ label:'Avg %', data: values, borderColor: 'rgb(16,185,129)', backgroundColor: 'rgba(16,185,129,0.3)' }] }} options={{ responsive:true, plugins:{ legend:{ display:false } } }} />
+              const options = { responsive:true, plugins:{ legend:{ display:false } }, scales: { x: { ticks: { color: '#FFF' } }, y: { ticks: { color: '#FFF' } } } };
+              const pieOptions = { responsive:true, maintainAspectRatio:false, plugins: { legend: { labels: { color: '#FFF' } } } };
+
+              if (b3Type==='pie') return <div className="h-56"><Pie data={{ labels, datasets:[{ data: values, backgroundColor: labels.map((_,i)=>`hsl(${(i*57)%360} 70% 65%)`) }] }} options={pieOptions} /></div>
+              if (b3Type==='bar') return <Bar data={{ labels, datasets:[{ label:'Avg %', data: values, backgroundColor: 'rgba(16,185,129,0.4)', borderColor: 'rgb(16,185,129)' }] }} options={options} />
+              return <Line data={{ labels, datasets:[{ label:'Avg %', data: values, borderColor: 'rgb(16,185,129)', backgroundColor: 'rgba(16,185,129,0.3)' }] }} options={options} />
             })()}
           </div>
 
           {/* Block 4: KPI Scores with Created-date filter per KRA */}
-          <div id="b4" className="bg-white p-4 rounded shadow">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="font-medium">KPI Scores (Created-date filter)</h4>
-              <div className="flex items-center gap-2">
-                <select value={b4KraId} onChange={(e)=>setB4KraId(e.target.value)} className="p-2 border rounded text-sm">
+          <div id="b4" className="bg-white/20 backdrop-blur-md p-4 rounded-lg shadow-xl">
+            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+              <h4 className="font-medium text-white">KPI Scores (Created-date filter)</h4>
+              <div className="flex items-center gap-2 flex-wrap">
+                <select value={b4KraId} onChange={(e)=>setB4KraId(e.target.value)} className="p-2 border border-white/30 rounded text-sm bg-white/80 text-black">
                   <option value="">All</option>
                   {allKras.map(k=> <option key={k.kra_id} value={k.kra_id}>{k.name}</option>)}
                 </select>
-                <select value={b4Type} onChange={(e)=>setB4Type(e.target.value)} className="p-2 border rounded text-sm">
+                <select value={b4Type} onChange={(e)=>setB4Type(e.target.value)} className="p-2 border border-white/30 rounded text-sm bg-white/80 text-black">
                   <option value="pie">Pie</option>
                   <option value="bar">Bar</option>
                   <option value="line">Line</option>
@@ -1191,7 +1263,7 @@ export default function EmployeeDashboard() {
                 <div className="relative">
                   <button onClick={()=>setExpB4Open(v=>!v)} className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500">Export</button>
                   {expB4Open && (
-                    <div className="absolute right-0 top-10 bg-white border rounded shadow text-sm z-10">
+                    <div className="absolute right-0 top-10 bg-white border rounded shadow text-sm z-10 text-black">
                       <button className="block px-3 py-2 hover:bg-gray-100 w-full text-left" onClick={()=>{ setExpB4Open(false); exportSectionById('b4','kpi-scores-created-filter','pdf'); }}>PDF</button>
                       <button className="block px-3 py-2 hover:bg-gray-100 w-full text-left" onClick={()=>{ setExpB4Open(false); exportSectionById('b4','kpi-scores-created-filter','png'); }}>PNG</button>
                       <button className="block px-3 py-2 hover:bg-gray-100 w-full text-left" onClick={()=>{ setExpB4Open(false); exportSectionById('b4','kpi-scores-created-filter','jpg'); }}>JPG</button>
@@ -1210,27 +1282,30 @@ export default function EmployeeDashboard() {
               });
               const labels = list.map(k=>k.name);
               const values = list.map(k=> typeof k.progress==='number'? k.progress:0);
-              if (b4Type==='pie') return <div className="h-56"><Pie data={{ labels, datasets:[{ data: values, backgroundColor: labels.map((_,i)=>`hsl(${(i*83)%360} 70% 65%)`) }] }} options={{ maintainAspectRatio:false }} /></div>
-              if (b4Type==='bar') return <Bar data={{ labels, datasets:[{ label:'%', data: values, backgroundColor: 'rgba(234,88,12,0.4)', borderColor: 'rgb(234,88,12)' }] }} options={{ responsive:true, plugins:{ legend:{ display:false } } }} />
-              return <Line data={{ labels, datasets:[{ label:'%', data: values, borderColor: 'rgb(59,130,246)', backgroundColor: 'rgba(59,130,246,0.3)' }] }} options={{ responsive:true, plugins:{ legend:{ display:false } } }} />
+              const options = { responsive:true, plugins:{ legend:{ display:false } }, scales: { x: { ticks: { color: '#FFF' } }, y: { ticks: { color: '#FFF' } } } };
+              const pieOptions = { responsive:true, maintainAspectRatio:false, plugins: { legend: { labels: { color: '#FFF' } } } };
+              
+              if (b4Type==='pie') return <div className="h-56"><Pie data={{ labels, datasets:[{ data: values, backgroundColor: labels.map((_,i)=>`hsl(${(i*83)%360} 70% 65%)`) }] }} options={pieOptions} /></div>
+              if (b4Type==='bar') return <Bar data={{ labels, datasets:[{ label:'%', data: values, backgroundColor: 'rgba(234,88,12,0.4)', borderColor: 'rgb(234,88,12)' }] }} options={options} />
+              return <Line data={{ labels, datasets:[{ label:'%', data: values, borderColor: 'rgb(59,130,246)', backgroundColor: 'rgba(59,130,246,0.3)' }] }} options={options} />
             })()}
           </div>
 
           {/* Block 5: Combined frequency charts (limited kinds) */}
-          <div id="b5" className="bg-white p-4 rounded shadow lg:col-span-2">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="font-medium">Frequency Charts</h4>
-              <div className="flex items-center gap-2">
-                <select value={b5KraId} onChange={(e)=>setB5KraId(e.target.value)} className="p-2 border rounded text-sm">
+          <div id="b5" className="bg-white/20 backdrop-blur-md p-4 rounded-lg shadow-xl lg:col-span-2">
+            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+              <h4 className="font-medium text-white">Frequency Charts</h4>
+              <div className="flex items-center gap-2 flex-wrap">
+                <select value={b5KraId} onChange={(e)=>setB5KraId(e.target.value)} className="p-2 border border-white/30 rounded text-sm bg-white/80 text-black">
                   <option value="">All KRAs</option>
                   {allKras.map(k=> <option key={k.kra_id} value={k.kra_id}>{k.name}</option>)}
                 </select>
-                <select value={b5Basis} onChange={(e)=>setB5Basis(e.target.value)} className="p-2 border rounded text-sm">
+                <select value={b5Basis} onChange={(e)=>setB5Basis(e.target.value)} className="p-2 border border-white/30 rounded text-sm bg-white/80 text-black">
                   <option value="created">Created Date</option>
                   <option value="due">Due Date</option>
                   <option value="both">Both</option>
                 </select>
-                <select value={b5Type} onChange={(e)=>setB5Type(e.target.value)} className="p-2 border rounded text-sm">
+                <select value={b5Type} onChange={(e)=>setB5Type(e.target.value)} className="p-2 border border-white/30 rounded text-sm bg-white/80 text-black">
                   <option value="bar">Bar</option>
                   <option value="line">Line</option>
                   <option value="pie">Pie</option>
@@ -1239,7 +1314,7 @@ export default function EmployeeDashboard() {
                 <div className="relative">
                   <button onClick={()=>setExpB5Open(v=>!v)} className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500">Export</button>
                   {expB5Open && (
-                    <div className="absolute right-0 top-10 bg-white border rounded shadow text-sm z-10">
+                    <div className="absolute right-0 top-10 bg-white border rounded shadow text-sm z-10 text-black">
                       <button className="block px-3 py-2 hover:bg-gray-100 w-full text-left" onClick={()=>{ setExpB5Open(false); exportSectionById('b5','frequency-combined','pdf'); }}>PDF</button>
                       <button className="block px-3 py-2 hover:bg-gray-100 w-full text-left" onClick={()=>{ setExpB5Open(false); exportSectionById('b5','frequency-combined','png'); }}>PNG</button>
                       <button className="block px-3 py-2 hover:bg-gray-100 w-full text-left" onClick={()=>{ setExpB5Open(false); exportSectionById('b5','frequency-combined','jpg'); }}>JPG</button>
@@ -1289,21 +1364,24 @@ export default function EmployeeDashboard() {
               });
               const kpiLabels = list.map(k=>k.name);
               const kpiValues = list.map(k=> typeof k.progress==='number'? k.progress:0);
+              
+              const options = { responsive:true, plugins:{ legend:{ display:false } }, scales: { x: { ticks: { color: '#FFF' } }, y: { ticks: { color: '#FFF' } } } };
+              const pieOptions = { responsive:true, maintainAspectRatio:false, plugins: { legend: { labels: { color: '#FFF' } } } };
 
               const render = (labels, values) => {
-                if (b5Type==='pie') return <div className="h-56"><Pie data={{ labels, datasets:[{ data: values, backgroundColor: labels.map((_,i)=>`hsl(${(i*67)%360} 70% 65%)`) }] }} options={{ maintainAspectRatio:false }} /></div>;
-                if (b5Type==='bar') return <Bar data={{ labels, datasets:[{ label:'%', data: values, backgroundColor: 'rgba(99,102,241,0.4)', borderColor: 'rgb(99,102,241)' }] }} options={{ responsive:true, plugins:{ legend:{ display:false } } }} />;
-                return <Line data={{ labels, datasets:[{ label:'%', data: values, borderColor: 'rgb(99,102,241)', backgroundColor: 'rgba(99,102,241,0.3)' }] }} options={{ responsive:true, plugins:{ legend:{ display:false } } }} />;
+                if (b5Type==='pie') return <div className="h-56"><Pie data={{ labels, datasets:[{ data: values, backgroundColor: labels.map((_,i)=>`hsl(${(i*67)%360} 70% 65%)`) }] }} options={pieOptions} /></div>;
+                if (b5Type==='bar') return <Bar data={{ labels, datasets:[{ label:'%', data: values, backgroundColor: 'rgba(99,102,241,0.4)', borderColor: 'rgb(99,102,241)' }] }} options={options} />;
+                return <Line data={{ labels, datasets:[{ label:'%', data: values, borderColor: 'rgb(99,102,241)', backgroundColor: 'rgba(99,102,241,0.3)' }] }} options={options} />;
               };
 
               return (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <h5 className="font-medium mb-2">KRA Scores</h5>
+                    <h5 className="font-medium mb-2 text-white">KRA Scores</h5>
                     {render(kraLabels, kraValues)}
                   </div>
                   <div>
-                    <h5 className="font-medium mb-2">KPI Scores {b5KraId?`(KRA)`:''}</h5>
+                    <h5 className="font-medium mb-2 text-white">KPI Scores {b5KraId?`(KRA)`:''}</h5>
                     {render(kpiLabels, kpiValues)}
                   </div>
                 </div>
@@ -1325,23 +1403,23 @@ export default function EmployeeDashboard() {
       </div>
     ),
     tasks: (
-      <div className="bg-white p-6 rounded-lg shadow mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-semibold">My KPIs</h3>
-          <div className="flex items-center gap-3">
-            <select className="p-2 border rounded text-sm" value={empTasksFilter} onChange={(e)=>setEmpTasksFilter(e.target.value)}>
+      <div className="bg-white/20 backdrop-blur-md p-6 rounded-lg shadow-xl mb-8">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <h3 className="text-xl font-semibold text-white">My KPIs</h3>
+          <div className="flex items-center gap-3 flex-wrap">
+            <select className="p-2 border border-white/30 rounded text-sm bg-white/80 text-black" value={empTasksFilter} onChange={(e)=>setEmpTasksFilter(e.target.value)}>
               <option value="active">Active</option>
               <option value="end">End</option>
               <option value="all">All</option>
             </select>
-            <select className="p-2 border rounded text-sm" value={empTasksKraFilter} onChange={(e)=>setEmpTasksKraFilter(e.target.value)}>
+            <select className="p-2 border border-white/30 rounded text-sm bg-white/80 text-black" value={empTasksKraFilter} onChange={(e)=>setEmpTasksKraFilter(e.target.value)}>
               <option value="">All KRAs</option>
               {allKras.map(k=> (<option key={k.kra_id} value={k.kra_id}>{k.name}</option>))}
             </select>
             <div className="relative">
               <button onClick={()=>setExpTasksOpen(v=>!v)} className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500">Export</button>
               {expTasksOpen && (
-                <div className="absolute right-0 top-10 bg-white border rounded shadow text-sm z-10">
+                <div className="absolute right-0 top-10 bg-white border rounded shadow text-sm z-10 text-black">
                   <button className="block px-3 py-2 hover:bg-gray-100 w-full text-left" onClick={()=>{ setExpTasksOpen(false); exportSectionById('emp-tasks-wrap','my-kpis','pdf'); }}>PDF</button>
                   <button className="block px-3 py-2 hover:bg-gray-100 w-full text-left" onClick={()=>{ setExpTasksOpen(false); exportTableToCSV('#emp-tasks-table','my-kpis.csv'); }}>CSV</button>
                   <button className="block px-3 py-2 hover:bg-gray-100 w-full text-left" onClick={()=>{ setExpTasksOpen(false); exportTableToExcel('#emp-tasks-table','my-kpis.xls'); }}>Excel</button>
@@ -1351,17 +1429,17 @@ export default function EmployeeDashboard() {
             <button className="px-4 py-2 rounded bg-indigo-600 text-white" onClick={() => navigate('/create_kpi')}>Create KPI</button>
           </div>
         </div>
-        <div id="emp-tasks-wrap" className="overflow-x-auto">
+        <div id="emp-tasks-wrap" className="overflow-x-auto bg-black/20 rounded-lg shadow-inner">
           <table id="emp-tasks-table" className="w-full">
             <thead>
-              <tr className="border-b">
-                <th className="text-left p-3">KRA</th>
-                <th className="text-left p-3">KPI Name</th>
-                <th className="text-left p-3">Progress</th>
-                <th className="text-left p-3">Target</th>
-                <th className="text-left p-3">Due Date</th>
-                <th className="text-left p-3">Status</th>
-                <th className="text-left p-3">Actions</th>
+              <tr className="border-b border-white/20 bg-white/20">
+                <th className="text-left p-3 text-white">KRA</th>
+                <th className="text-left p-3 text-white">KPI Name</th>
+                <th className="text-left p-3 text-white">Progress</th>
+                <th className="text-left p-3 text-white">Target</th>
+                <th className="text-left p-3 text-white">Due Date</th>
+                <th className="text-left p-3 text-white">Status</th>
+                <th className="text-left p-3 text-white">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -1379,12 +1457,12 @@ export default function EmployeeDashboard() {
               })().map((kpi) => {
                 const st = getStatusInfo(kpi.progress, kpi.target);
                 return (
-                  <tr key={kpi.id} className="border-b">
-                    <td className="p-3">{kpi.kra_name || '-'}</td>
-                    <td className="p-3 font-medium">{kpi.name}</td>
-                    <td className="p-3">{kpi.progress}%</td>
-                    <td className="p-3">{kpi.target ?? 100}%</td>
-                    <td className="p-3">{kpi.due_date ? new Date(kpi.due_date).toLocaleDateString() : '-'}</td>
+                  <tr key={kpi.id} className="border-b border-white/20 hover:bg-white/5">
+                    <td className="p-3 text-white">{kpi.kra_name || '-'}</td>
+                    <td className="p-3 font-medium text-white">{kpi.name}</td>
+                    <td className="p-3 text-white">{kpi.progress}%</td>
+                    <td className="p-3 text-white">{kpi.target ?? 100}%</td>
+                    <td className="p-3 text-white">{kpi.due_date ? new Date(kpi.due_date).toLocaleDateString() : '-'}</td>
                     <td className="p-3"><span className={`px-2 py-1 rounded text-xs ${st.color}`}>{st.label}</span></td>
                     <td className="p-3 flex gap-3">
                       {(() => {
@@ -1392,14 +1470,14 @@ export default function EmployeeDashboard() {
                         const isOverdue = kpi.due_date ? new Date(kpi.due_date) < today : false;
                         if (isOverdue) {
                           return (
-                            <button onClick={() => removeKpi(kpi.id)} className="text-red-600 hover:text-red-800 text-sm">Remove</button>
+                            <button onClick={() => removeKpi(kpi.id)} className="text-red-400 hover:text-red-300 text-sm">Remove</button>
                           );
                         }
                         return (
                           <>
-                            <button onClick={() => openScoreModal(kpi)} className="text-blue-600 hover:text-blue-800 text-sm">View</button>
-                            <button onClick={() => openEditModal(kpi)} className="text-indigo-600 hover:text-indigo-800 text-sm">Edit</button>
-                            <button onClick={() => removeKpi(kpi.id)} className="text-red-600  hover:text-red-800 text-sm">Remove</button>
+                            <button onClick={() => openScoreModal(kpi)} className="text-blue-300 hover:text-blue-100 text-sm">View</button>
+                            <button onClick={() => openEditModal(kpi)} className="text-indigo-300 hover:text-indigo-100 text-sm">Edit</button>
+                            <button onClick={() => removeKpi(kpi.id)} className="text-red-400 hover:text-red-300 text-sm">Remove</button>
                           </>
                         );
                       })()}
@@ -1413,13 +1491,13 @@ export default function EmployeeDashboard() {
       </div>
     ),
     kras: (
-      <div id="kras-section" className="bg-white p-6 rounded-lg shadow mb-8">
+      <div id="kras-section" className="bg-white/20 backdrop-blur-md p-6 rounded-lg shadow-xl mb-8">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-semibold">My KRAs</h3>
+          <h3 className="text-xl font-semibold text-white">My KRAs</h3>
           <div className="relative">
             <button onClick={()=>setExpKrasOpen(v=>!v)} className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500">Export</button>
             {expKrasOpen && (
-              <div className="absolute right-0 top-10 bg-white border rounded shadow text-sm z-10">
+              <div className="absolute right-0 top-10 bg-white border rounded shadow text-sm z-10 text-black">
                 <button className="block px-3 py-2 hover:bg-gray-100 w-full text-left" onClick={()=>{
                   setExpKrasOpen(false);
                   const today = new Date(); today.setHours(0,0,0,0);
@@ -1462,14 +1540,14 @@ export default function EmployeeDashboard() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {recentKRAs.map((kra) => (
-            <div key={kra.kra_id} className="border rounded p-4">
-              <h4 className="font-medium mb-2">{kra.name}</h4>
-              <p className="text-sm text-gray-600 mb-3">{kra.definition}</p>
+            <div key={kra.kra_id} className="border border-white/30 bg-white/10 rounded p-4">
+              <h4 className="font-medium mb-2 text-white">{kra.name}</h4>
+              <p className="text-sm text-gray-200 mb-3">{kra.definition}</p>
               <div className="flex justify-between items-center text-sm mb-2">
-                <span className="text-gray-500">Due: {new Date(kra.due_date).toLocaleDateString()}</span>
+                <span className="text-gray-300">Due: {new Date(kra.due_date).toLocaleDateString()}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-700">Overall: {(() => {
+                <span className="text-sm text-gray-100">Overall: {(() => {
                   const today = new Date(); today.setHours(0,0,0,0);
                   const arr = myKPIs.filter(x=> String(x.kra_id)===String(kra.kra_id) && (
                     x.kpi_status ? String(x.kpi_status).toLowerCase()==='active' : (!x.due_date || new Date(x.due_date) >= today)
@@ -1479,7 +1557,7 @@ export default function EmployeeDashboard() {
                 })()}%</span>
                 <button
                   onClick={() => handleKpiClick(kra.kra_id)}
-                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  className="text-blue-300 hover:text-blue-100 text-sm font-medium"
                 >
                   View Details
                 </button>
@@ -1490,29 +1568,29 @@ export default function EmployeeDashboard() {
       </div>
     ),
     comments: (
-      <div className="bg-white p-6 rounded-lg shadow">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-xl font-semibold">Comments</h3>
+      <div className="bg-white/20 backdrop-blur-md p-6 rounded-lg shadow-xl">
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <h3 className="text-xl font-semibold text-white">Comments</h3>
           <div className="flex items-center gap-2">
-            <input type="number" className="p-2 border rounded w-24" value={perfFilter.year} onChange={(e)=>setPerfFilter(prev=>({ ...prev, year: Number(e.target.value) }))} />
-            <select className="p-2 border rounded" value={perfFilter.month} onChange={(e)=>setPerfFilter(prev=>({ ...prev, month: Number(e.target.value) }))}>
+            <input type="number" className="p-2 border border-white/30 rounded w-24 bg-white/80 text-black" value={perfFilter.year} onChange={(e)=>setPerfFilter(prev=>({ ...prev, year: Number(e.target.value) }))} />
+            <select className="p-2 border border-white/30 rounded bg-white/80 text-black" value={perfFilter.month} onChange={(e)=>setPerfFilter(prev=>({ ...prev, month: Number(e.target.value) }))}>
               {Array.from({length:12},(_,i)=>i+1).map(m=> <option key={m} value={m}>{m}</option>)}
             </select>
           </div>
         </div>
         <div className="space-y-2">
           {perfReviews.map((r, idx)=> (
-            <div key={idx} className="border rounded p-3">
-              <div className="flex items-center justify-between text-sm text-gray-600">
-                <span><span className="font-medium">KRA:</span> {r.kra_name}</span>
+            <div key={idx} className="border border-white/30 bg-white/10 rounded p-3">
+              <div className="flex items-center justify-between text-sm text-gray-300">
+                <span><span className="font-medium text-gray-100">KRA:</span> {r.kra_name}</span>
                 <span>{r.review_at ? new Date(r.review_at).toLocaleDateString() : ''}</span>
               </div>
-              <div className="text-sm mt-1"><span className="font-medium">Score:</span> {r.score}</div>
-              <div className="text-sm mt-1"><span className="font-medium">Comment:</span> <span dangerouslySetInnerHTML={{ __html: r.comment ? renderCommentHtml(r.comment) : '-' }} /></div>
+              <div className="text-sm mt-1 text-white"><span className="font-medium text-gray-100">Score:</span> {r.score}</div>
+              <div className="text-sm mt-1 text-white"><span className="font-medium text-gray-100">Comment:</span> <span dangerouslySetInnerHTML={{ __html: r.comment ? renderCommentHtml(r.comment) : '-' }} /></div>
             </div>
           ))}
           {perfReviews.length===0 && (
-            <div className="text-gray-600">No comments for this month.</div>
+            <div className="text-gray-200">No comments for this month.</div>
           )}
         </div>
       </div>
@@ -1520,10 +1598,18 @@ export default function EmployeeDashboard() {
   };
 
   return (
-    <div className="min-h-screen text-black ">
+    <div 
+      className="min-h-screen text-white p-4 md:p-8"
+      style={{
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
+    >
       <div className="max-w-7xl mx-auto">
         {/* Navigation Tabs */}
-        <div className="flex gap-2 mb-8 flex-wrap border-b">
+        <div className="flex gap-2 mb-8 flex-wrap border-b border-white/20">
           {Object.keys(sections).map((section) => (
             <button
               key={section}
@@ -1531,7 +1617,7 @@ export default function EmployeeDashboard() {
               className={`px-4 py-2 rounded-t-lg font-medium ${
                 activeSection === section
                   ? 'bg-indigo-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  : 'text-white/70 hover:text-white hover:bg-white/10'
               }`}
             >
               {section.charAt(0).toUpperCase() + section.slice(1)}
@@ -1579,40 +1665,41 @@ export default function EmployeeDashboard() {
             </div>
           </div>
         )}
+        {/* KRA Details Modal */}
         {kraModalOpen && (
-          <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-            <div className="bg-white w-full max-w-3xl rounded shadow p-6">
+          <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
+            <div className="bg-white/20 backdrop-blur-md text-white w-full max-w-3xl rounded-lg shadow-xl p-6">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h3 className="text-xl font-semibold">KRA: {kraModalName}</h3>
-                  <p className="text-sm text-gray-600">Overall: <span className="font-semibold text-indigo-600">{kraModalAgg}%</span></p>
+                  <h3 className="text-xl font-semibold text-white">KRA: {kraModalName}</h3>
+                  <p className="text-sm text-gray-200">Overall: <span className="font-semibold text-indigo-300">{kraModalAgg}%</span></p>
                 </div>
-                <button onClick={() => setKraModalOpen(false)} className="text-gray-500">✕</button>
+                <button onClick={() => setKraModalOpen(false)} className="text-gray-100 hover:text-white text-2xl">✕</button>
               </div>
               {kraModalLoading ? (
-                <div>Loading...</div>
+                <div className="text-white">Loading...</div>
               ) : (
                 <div className="space-y-4 max-h-[75vh] overflow-auto">
                   {kraModalKpis.map(kpi => (
-                    <div key={kpi.id} className="border rounded p-4">
+                    <div key={kpi.id} className="border border-white/30 bg-white/10 rounded p-4">
                       <div className="flex justify-between items-center">
                         <div>
-                          <h4 className="font-semibold">{kpi.name}</h4>
-                          <p className="text-sm text-gray-600">Due: {new Date(kpi.due_date).toLocaleDateString()} • Method: {kpi.scoring_method} • {typeof kpi.percentage === 'number' ? `Current: ${kpi.percentage}%` : 'No score yet'}</p>
+                          <h4 className="font-semibold text-white">{kpi.name}</h4>
+                          <p className="text-sm text-gray-200">Due: {new Date(kpi.due_date).toLocaleDateString()} • Method: {kpi.scoring_method} • {typeof kpi.percentage === 'number' ? `Current: ${kpi.percentage}%` : 'No score yet'}</p>
                         </div>
                       </div>
                       <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                          <label className="block text-sm font-medium mb-1">Score</label>
-                          <div className="text-base font-medium text-gray-800">
+                          <label className="block text-sm font-medium mb-1 text-gray-100">Score</label>
+                          <div className="text-base font-medium text-gray-100">
                             {kpi.scoring_method === 'Percentage' && `${kpi.score ?? 0}%`}
                             {(kpi.scoring_method === 'Scale (1-5)' || kpi.scoring_method === 'Rating') && `${kpi.score ?? 0} / 5`}
                             {kpi.scoring_method === 'Scale (1-10)' && `${kpi.score ?? 0} / 10`}
                           </div>
                         </div>
                         <div className="md:col-span-2">
-                          <label className="block text-sm font-medium mb-1">Comments</label>
-                          <div className="p-2 border rounded bg-gray-50 min-h-[48px]">
+                          <label className="block text-sm font-medium mb-1 text-gray-100">Comments</label>
+                          <div className="p-2 border border-white/30 rounded bg-black/20 min-h-[48px]">
                             <span dangerouslySetInnerHTML={{ __html: kpi.comments ? renderCommentHtml(kpi.comments) : '-' }} />
                           </div>
                         </div>
@@ -1620,44 +1707,45 @@ export default function EmployeeDashboard() {
                     </div>
                   ))}
                   {kraModalKpis.length === 0 && (
-                    <div className="p-4 border rounded text-gray-600">No KPIs created for this KRA yet.</div>
+                    <div className="p-4 border border-white/30 rounded text-gray-200">No KPIs created for this KRA yet.</div>
                   )}
                   <div className="flex justify-end pt-2 gap-2">
                     <button onClick={submitKraModalNotify} className="px-4 py-2 rounded bg-indigo-600 text-white">Submit</button>
-                    <button onClick={() => setKraModalOpen(false)} className="px-4 py-2 rounded bg-gray-200">Close</button>
+                    <button onClick={() => setKraModalOpen(false)} className="px-4 py-2 rounded bg-white/20 border border-white/30 hover:bg-white/10 text-white">Close</button>
                   </div>
                 </div>
               )}
             </div>
           </div>
         )}
+        {/* Edit KPI Modal */}
         {editModalOpen && (
-          <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-            <div className="bg-white text-black w-full max-w-lg rounded shadow p-6">
+          <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
+            <div className="bg-white/20 backdrop-blur-md text-white w-full max-w-lg rounded-lg shadow-xl p-6 max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">Edit KPI</h3>
-                <button onClick={() => setEditModalOpen(false)} className="text-gray-500">✕</button>
+                <h3 className="text-lg font-semibold text-white">Edit KPI</h3>
+                <button onClick={() => setEditModalOpen(false)} className="text-gray-100 hover:text-white text-2xl">✕</button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Name</label>
-                  <input className="w-full p-2 border rounded" value={editForm.name} onChange={(e)=>setEditForm({...editForm,name:e.target.value})} />
+                  <label className="block text-sm font-medium mb-1 text-gray-100">Name</label>
+                  <input className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" value={editForm.name} onChange={(e)=>setEditForm({...editForm,name:e.target.value})} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Due Date</label>
-                  <input type="date" className="w-full p-2 border rounded" value={editForm.due_date} onChange={(e)=>setEditForm({...editForm,due_date:e.target.value})} />
+                  <label className="block text-sm font-medium mb-1 text-gray-100">Due Date</label>
+                  <input type="date" className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" value={editForm.due_date} onChange={(e)=>setEditForm({...editForm,due_date:e.target.value})} />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-1">Definition</label>
-                  <textarea className="w-full p-2 border rounded" rows={2} value={editForm.def} onChange={(e)=>setEditForm({...editForm,def:e.target.value})} />
+                  <label className="block text-sm font-medium mb-1 text-gray-100">Definition</label>
+                  <textarea className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" rows={2} value={editForm.def} onChange={(e)=>setEditForm({...editForm,def:e.target.value})} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Target (0-100)</label>
-                  <input type="number" min="0" max="100" className="w-full p-2 border rounded" value={editForm.target} onChange={(e)=>setEditForm({...editForm,target:e.target.value})} />
+                  <label className="block text-sm font-medium mb-1 text-gray-100">Target (0-100)</label>
+                  <input type="number" min="0" max="100" className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" value={editForm.target} onChange={(e)=>setEditForm({...editForm,target:e.target.value})} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Scoring Method</label>
-                  <select className="w-full p-2 border rounded" value={editForm.scoring_method} onChange={(e)=>setEditForm({...editForm,scoring_method:e.target.value})}>
+                  <label className="block text-sm font-medium mb-1 text-gray-100">Scoring Method</label>
+                  <select className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" value={editForm.scoring_method} onChange={(e)=>setEditForm({...editForm,scoring_method:e.target.value})}>
                     <option value="Percentage">Percentage</option>
                     <option value="Scale (1-5)">Scale (1-5)</option>
                     <option value="Scale (1-10)">Scale (1-10)</option>
@@ -1666,23 +1754,24 @@ export default function EmployeeDashboard() {
                 </div>
               </div>
               <div className="flex justify-end gap-2 mt-4">
-                <button onClick={()=>setEditModalOpen(false)} className="px-4 py-2 rounded border">Cancel</button>
+                <button onClick={()=>setEditModalOpen(false)} className="px-4 py-2 rounded border border-white/30 text-white hover:bg-white/10">Cancel</button>
                 <button onClick={submitEditModal} className="px-4 py-2 rounded bg-indigo-600 text-white">Update</button>
               </div>
             </div>
           </div>
         )}
+        {/* Score KPI Modal */}
         {scoreModalOpen && (
-          <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-            <div className="bg-white text-black w-full max-w-md rounded shadow p-6">
+          <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
+            <div className="bg-white/20 backdrop-blur-md text-white w-full max-w-md rounded-lg shadow-xl p-6 max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">Score KPI{scoreModalKpi ? `: ${scoreModalKpi.name}` : ''}</h3>
-                <button onClick={() => setScoreModalOpen(false)} className="text-gray-500">✕</button>
+                <h3 className="text-lg font-semibold text-white">Score KPI{scoreModalKpi ? `: ${scoreModalKpi.name}` : ''}</h3>
+                <button onClick={() => setScoreModalOpen(false)} className="text-gray-100 hover:text-white text-2xl">✕</button>
               </div>
               {scoreModalKpi && (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Score</label>
+                    <label className="block text-sm font-medium mb-1 text-gray-100">Score</label>
                     {/* Render appropriate input by method */}
                     {scoreModalKpi.scoring_method === 'Percentage' && (
                       <div className="flex items-center gap-2">
@@ -1700,7 +1789,7 @@ export default function EmployeeDashboard() {
                               key={val}
                               type="button"
                               onClick={() => setScoreModalValue(String(val))}
-                              className={`px-3 py-1 rounded border ${active ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700'}`}
+                              className={`px-3 py-1 rounded border ${active ? 'bg-indigo-600 text-white' : 'bg-white/10 text-white border-white/30'}`}
                             >
                               {val}
                             </button>
@@ -1719,7 +1808,7 @@ export default function EmployeeDashboard() {
                               key={val}
                               type="button"
                               onClick={() => setScoreModalValue(String(val))}
-                              className={`px-2 py-1 rounded border ${active ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700'}`}
+                              className={`px-2 py-1 rounded border ${active ? 'bg-indigo-600 text-white' : 'bg-white/10 text-white border-white/30'}`}
                             >
                               {val}
                             </button>
@@ -1739,7 +1828,7 @@ export default function EmployeeDashboard() {
                                 key={val}
                                 type="button"
                                 onClick={() => setScoreModalValue(String(val))}
-                                className={`text-4xl ${active ? 'text-yellow-500' : 'text-gray-400'}`}
+                                className={`text-4xl ${active ? 'text-yellow-400' : 'text-white/30'}`}
                                 title={`${val}`}
                               >
                                 ★
@@ -1753,13 +1842,13 @@ export default function EmployeeDashboard() {
                   </div>
                   <div>
                     <div className="flex items-center justify-between">
-                      <label className="block text-sm font-medium mb-1">Comments</label>
-                      <button type="button" onClick={() => openLinkModal('score')} className="text-xs text-indigo-600 underline">Insert Link</button>
+                      <label className="block text-sm font-medium mb-1 text-gray-100">Comments</label>
+                      <button type="button" onClick={() => openLinkModal('score')} className="text-xs text-indigo-300 underline">Insert Link</button>
                     </div>
-                    <textarea className="w-full p-2 border rounded" rows={3} value={scoreModalComments} onChange={(e) => setScoreModalComments(e.target.value)} placeholder="Add comments (optional)" />
+                    <textarea className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" rows={3} value={scoreModalComments} onChange={(e) => setScoreModalComments(e.target.value)} placeholder="Add comments (optional)" />
                   </div>
                   <div className="flex justify-end gap-2">
-                    <button onClick={() => setScoreModalOpen(false)} className="px-4 py-2 rounded border">Cancel</button>
+                    <button onClick={() => setScoreModalOpen(false)} className="px-4 py-2 rounded border border-white/30 text-white hover:bg-white/10">Cancel</button>
                     <button onClick={submitScoreModal} className="px-4 py-2 rounded bg-indigo-600 text-white">Update</button>
                   </div>
                 </div>
@@ -1767,28 +1856,30 @@ export default function EmployeeDashboard() {
             </div>
           </div>
         )}
+        {/* Submit Toast */}
         {submitToast && (
           <div className="fixed bottom-4 right-4 bg-emerald-600 text-white px-4 py-2 rounded shadow z-50">Submitted. Manager notified.</div>
         )}
+        {/* Insert Link Modal */}
         {linkModalOpen && (
-          <div className="fixed inset-0 z-50 bg-black/30 flex items-center justify-center">
-            <div className="bg-white w-full max-w-sm rounded shadow p-5">
+          <div className="fixed inset-0 z-50 bg-black/30 flex items-center justify-center p-4">
+            <div className="bg-white/20 backdrop-blur-md text-white w-full max-w-sm rounded-lg shadow-xl p-5">
               <div className="flex justify-between items-center mb-3">
-                <h4 className="font-semibold">Insert Link</h4>
-                <button onClick={closeLinkModal} className="text-gray-500">✕</button>
+                <h4 className="font-semibold text-white">Insert Link</h4>
+                <button onClick={closeLinkModal} className="text-gray-100 hover:text-white text-2xl">✕</button>
               </div>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm mb-1">Link Text (Name)</label>
-                  <input className="w-full p-2 border rounded" value={linkName} onChange={(e)=>setLinkName(e.target.value)} />
+                  <label className="block text-sm mb-1 text-gray-100">Link Text (Name)</label>
+                  <input className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" value={linkName} onChange={(e)=>setLinkName(e.target.value)} />
                 </div>
                 <div>
-                  <label className="block text-sm mb-1">URL (http or https)</label>
-                  <input className="w-full p-2 border rounded" placeholder="https://..." value={linkUrl} onChange={(e)=>setLinkUrl(e.target.value)} />
+                  <label className="block text-sm mb-1 text-gray-100">URL (http or https)</label>
+                  <input className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" placeholder="https://..." value={linkUrl} onChange={(e)=>setLinkUrl(e.target.value)} />
                 </div>
               </div>
               <div className="flex justify-end gap-2 mt-4">
-                <button onClick={closeLinkModal} className="px-4 py-2 rounded border">Cancel</button>
+                <button onClick={closeLinkModal} className="px-4 py-2 rounded border border-white/30 text-white hover:bg-white/10">Cancel</button>
                 <button onClick={confirmLinkModal} className="px-4 py-2 rounded bg-indigo-600 text-white" disabled={!linkName || !/^https?:\/\//i.test(linkUrl)}>Insert</button>
               </div>
             </div>

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { getToken, getRole, getUserName } from '../../utils/authStorage';
+// Import the background image
+import backgroundImage from '../../assets/background.png';
 
 export default function ManagerKracreation() {
   const [formData, setFormData] = useState({
@@ -187,6 +189,9 @@ export default function ManagerKracreation() {
           scoring_method: 'Percentage',
           target: ''
         }));
+        // Close modal and refresh list
+        setCreateOpen(false);
+        fetchMyKras();
       } else {
         setMessage(res.data.message || 'Error creating KRA');
       }
@@ -199,174 +204,219 @@ export default function ManagerKracreation() {
   };
 
   return (
-    <div className="min-h-screen bg-white p-8 rounded-lg shadow-lg">
-      <div className="mb-8 flex items-start justify-between">
-        <div>
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">Create New KRA (Manager)</h2>
-          <p className="text-gray-600">Department: {userDept}</p>
-        </div>
-        <button type="button" onClick={()=> setCreateOpen(true)} className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">Create KRA</button>
-      </div>
-
-      {message && (
-        <div className={`mb-6 p-4 rounded ${
-          message.toLowerCase().includes('success') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-        }`}>{message}</div>
-      )}
-      {createOpen && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white w-full max-w-lg rounded shadow p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Create KRA</h3>
-              <button className="text-gray-600" onClick={()=> setCreateOpen(false)}>✕</button>
+    <div
+      className="min-h-screen w-full bg-cover bg-center bg-fixed"
+      style={{ backgroundImage: `url(${backgroundImage})` }}
+    >
+      <div className="max-w-7xl mx-auto py-8 px-4">
+        {/* Main Card - Single card wrapping header and table */}
+        <div className="bg-white/20 backdrop-blur-sm border border-white/30 p-4 md:p-8 rounded-lg shadow-lg text-white">
+          
+          {/* Top Header */}
+          <div className="mb-8 flex flex-col sm:flex-row items-start justify-between">
+            <div>
+              {/* Text from image is "Admin", but code is for "Manager". Sticking to code context. */}
+              <h2 className="text-3xl font-bold text-white mb-2">Create New KRA (Manager)</h2>
+              <p className="text-white/80">Department: {userDept}</p>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">KRA Name *</label>
-                <input type="text" name="name" placeholder="Enter KRA Name" value={formData.name} onChange={handleInputChange} className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 text-black" required />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Definition *</label>
-                <textarea name="definition" placeholder="Enter KRA Definition" value={formData.definition} onChange={handleInputChange} rows={4} className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 text-black" required />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Department *</label>
-                <input type="text" name="dept" value={formData.dept} disabled className="w-full p-3 border border-gray-300 rounded-md bg-gray-100 text-gray-700" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">KRA Target (0-100)</label>
-                <input type="number" min="0" max="100" name="target" placeholder="e.g., 100" value={formData.target} onChange={handleInputChange} className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 text-black" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Assign To (Employee)</label>
-                <select name="employee_name" value={formData.employee_name} onChange={handleInputChange} className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 text-black">
-                  <option value="">Select Employee</option>
-                  <option value="all">All</option>
-                  {employees.map((e) => (
-                    <option key={e.user_id} value={e.name}>{e.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Scoring Method *</label>
-                <input type="text" name="scoring_method" value={formData.scoring_method} readOnly className="w-full p-3 border border-gray-300 rounded-md bg-gray-100 text-gray-700" />
-              </div>
-              <div className="flex justify-end gap-2">
-                <button type="button" className="px-4 py-2 rounded border" onClick={()=> setCreateOpen(false)}>Cancel</button>
-                <button type="submit" disabled={loading} className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-50">{loading ? 'Creating...' : 'Create'}</button>
-              </div>
-            </form>
+            <button
+              type="button"
+              onClick={()=> setCreateOpen(true)}
+              className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors mt-3 sm:mt-0"
+            >
+              Create KRA
+            </button>
           </div>
-        </div>
-      )}
 
-      {editOpen && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white w-full max-w-md rounded shadow p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Request Change: {editForm.name}</h3>
-              <button className="text-gray-600" onClick={()=> setEditOpen(false)}>✕</button>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium mb-1">KRA Name</label>
-                <input className="w-full p-2 border rounded text-black" value={editForm.name} onChange={(e)=> setEditForm(prev=>({ ...prev, name: e.target.value }))} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Definition</label>
-                <textarea className="w-full p-2 border rounded text-black" rows={3} value={editForm.definition} onChange={(e)=> setEditForm(prev=>({ ...prev, definition: e.target.value }))} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Target</label>
-                <input type="number" min="0" max="100" className="w-full p-2 border rounded text-black" value={editForm.target} onChange={(e)=> setEditForm(prev=>({ ...prev, target: e.target.value }))} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Assign To (Employee)</label>
-                <select className="w-full p-2 border rounded text-black" value={editForm.employee_name} onChange={(e)=> setEditForm(prev=>({ ...prev, employee_name: e.target.value }))}>
-                  <option value="">Select Employee</option>
-                  <option value="all">All</option>
-                  {employees.map((e)=> (
-                    <option key={e.user_id} value={e.name}>{e.name}</option>
+          {/* Success/Error Message */}
+          {message && (
+            <div className={`mb-6 p-4 rounded-lg font-semibold ${
+              message.toLowerCase().includes('success') ? 'bg-green-500/80 text-white' : 'bg-red-500/80 text-white'
+            }`}>{message}</div>
+          )}
+          
+          {/* My Created KRAs Table Section (inside the same card) */}
+          <div className="mt-10">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3">
+              <h3 className="text-2xl font-semibold text-white mb-2 sm:mb-0">My Created KRAs</h3>
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-white/80">Employee</label>
+                <select
+                  className="p-2 border border-white/50 rounded bg-white/30 text-gray-900 text-sm"
+                  value={selectedEmployee}
+                  onChange={(e)=> setSelectedEmployee(e.target.value)}
+                >
+                  <option value="">All</option>
+                  {Array.from(new Set(myKras.map(k => k.employee_name).filter(Boolean))).map(name => (
+                    <option key={name} value={name}>{name}</option>
                   ))}
                 </select>
               </div>
             </div>
-            <div className="flex justify-end gap-2 mt-4">
-              <button className="px-4 py-2 rounded border" onClick={()=> setEditOpen(false)}>Cancel</button>
-              <button className="px-4 py-2 rounded bg-indigo-600 text-white" onClick={submitRequestChange}>Send Request</button>
+            <div className="overflow-x-auto rounded-lg border border-white/30">
+              <table className="min-w-full text-left text-white">
+                <thead>
+                  {/* Darker header strip like in the image */}
+                  <tr className="bg-black/40 border-b border-white/30">
+                    <th className="p-3 font-semibold text-white">Name</th>
+                    <th className="p-3 font-semibold text-white">Definition</th>
+                    <th className="p-3 font-semibold text-white">Target</th>
+                    <th className="p-3 font-semibold text-white">Assigned To</th>
+                    <th className="p-3 font-semibold text-white">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(selectedEmployee ? myKras.filter(k => String(k.employee_name||'') === selectedEmployee) : myKras).map(k => (
+                    <tr key={k.kra_id} className="border-t border-white/20">
+                      <td className="p-3 text-white/90">{k.name}</td>
+                      <td className="p-3 max-w-xs truncate text-white/90" title={k.definition}>{k.definition}</td>
+                      <td className="p-3 text-white/90">{typeof k.target === 'number' ? k.target : '-'}</td>
+                      <td className="p-3 text-white/90">{k.employee_name || '-'}</td>
+                      <td className="p-3">
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            className="px-3 py-1 rounded bg-indigo-600 text-white text-sm hover:bg-indigo-700 transition-colors"
+                            onClick={()=> openEdit(k)}
+                          >
+                            Change
+                          </button>
+                          {/* Faded red button style from image */}
+                          <button
+                            type="button"
+                            className="px-3 py-1 rounded bg-red-800/30 text-red-200 text-sm hover:bg-red-800/50 transition-colors"
+                            onClick={()=> requestRemove(k)}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {!myKras.length && (
+                    <tr><td className="p-3 text-white/70" colSpan="5">No KRAs created by you yet.</td></tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
-        </div>
-      )}
-      <div className="mt-10">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-2xl font-semibold">My Created KRAs</h3>
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-600">Employee</label>
-            <select className="p-2 border rounded text-sm" value={selectedEmployee} onChange={(e)=> setSelectedEmployee(e.target.value)}>
-              <option value="">All</option>
-              {Array.from(new Set(myKras.map(k => k.employee_name).filter(Boolean))).map(name => (
-                <option key={name} value={name}>{name}</option>
-              ))}
-            </select>
+        </div> {/* End of single main card */}
+
+        {/* Create KRA Modal */}
+        {createOpen && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+            <div className="bg-white/20 backdrop-blur-md border border-white/30 w-full max-w-lg rounded-lg shadow-xl p-6 text-white">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-white">Create KRA</h3>
+                <button className="text-white/80 hover:text-white text-2xl font-bold" onClick={()=> setCreateOpen(false)}>✕</button>
+              </div>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-white/90 mb-1">KRA Name *</label>
+                  <input type="text" name="name" placeholder="Enter KRA Name" value={formData.name} onChange={handleInputChange} className="w-full p-3 border border-white/50 rounded-md bg-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white" required />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-white/90 mb-1">Definition *</label>
+                  <textarea name="definition" placeholder="Enter KRA Definition" value={formData.definition} onChange={handleInputChange} rows={4} className="w-full p-3 border border-white/50 rounded-md bg-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white" required />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-white/90 mb-1">Department *</label>
+                  <input type="text" name="dept" value={formData.dept} disabled className="w-full p-3 border border-white/50 rounded-md bg-white/10 text-white/70 opacity-70 cursor-not-allowed" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-white/90 mb-1">KRA Target (0-100)</label>
+                  <input type="number" min="0" max="100" name="target" placeholder="e.g., 100" value={formData.target} onChange={handleInputChange} className="w-full p-3 border border-white/50 rounded-md bg-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-white/90 mb-1">Assign To (Employee)</label>
+                  <select name="employee_name" value={formData.employee_name} onChange={handleInputChange} className="w-full p-3 border border-white/50 rounded-md bg-white/30 text-gray-900 focus:ring-2 focus:ring-indigo-500">
+                    <option value="">Select Employee</option>
+                    <option value="all">All</option>
+                    {employees.map((e) => (
+                      <option key={e.user_id} value={e.name}>{e.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-white/90 mb-1">Scoring Method *</label>
+                  <input type="text" name="scoring_method" value={formData.scoring_method} readOnly className="w-full p-3 border border-white/50 rounded-md bg-white/10 text-white/70 opacity-70 cursor-not-allowed" />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <button type="button" className="px-4 py-2 rounded border border-white/50 text-white hover:bg-white/20 transition-colors" onClick={()=> setCreateOpen(false)}>Cancel</button>
+                  <button type="submit" disabled={loading} className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50">{loading ? 'Creating...' : 'Create'}</button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full border text-left text-black">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="p-2">Name</th>
-                <th className="p-2">Definition</th>
-                <th className="p-2">Target</th>
-                <th className="p-2">Assigned To</th>
-                <th className="p-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(selectedEmployee ? myKras.filter(k => String(k.employee_name||'') === selectedEmployee) : myKras).map(k => (
-                <tr key={k.kra_id} className="border-t">
-                  <td className="p-2">{k.name}</td>
-                  <td className="p-2 max-w-xs truncate" title={k.definition}>{k.definition}</td>
-                  <td className="p-2">{typeof k.target === 'number' ? k.target : '-'}</td>
-                  <td className="p-2">{k.employee_name || '-'}</td>
-                  <td className="p-2">
-                    <div className="flex gap-2">
-                      <button type="button" className="px-3 py-1 rounded bg-indigo-600 text-white" onClick={()=> openEdit(k)}>Change</button>
-                      <button type="button" className="px-3 py-1 rounded border" onClick={()=> requestRemove(k)}>Remove</button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {!myKras.length && (
-                <tr><td className="p-3 text-gray-600" colSpan="5">No KRAs created by you yet.</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        )}
+
+        {/* Edit KRA Modal */}
+        {editOpen && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+            <div className="bg-white/20 backdrop-blur-md border border-white/30 w-full max-w-md rounded-lg shadow-xl p-6 text-white">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-white">Request Change: {editForm.name}</h3>
+                <button className="text-white/80 hover:text-white text-2xl font-bold" onClick={()=> setEditOpen(false)}>✕</button>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-white/90">KRA Name</label>
+                  <input className="w-full p-2 border border-white/50 rounded-md bg-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white" value={editForm.name} onChange={(e)=> setEditForm(prev=>({ ...prev, name: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-white/90">Definition</label>
+                  <textarea className="w-full p-2 border border-white/50 rounded-md bg-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white" rows={3} value={editForm.definition} onChange={(e)=> setEditForm(prev=>({ ...prev, definition: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-white/90">Target</label>
+                  <input type="number" min="0" max="100" className="w-full p-2 border border-white/50 rounded-md bg-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white" value={editForm.target} onChange={(e)=> setEditForm(prev=>({ ...prev, target: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-white/90">Assign To (Employee)</label>
+                  <select className="w-full p-2 border border-white/50 rounded-md bg-white/30 text-gray-900" value={editForm.employee_name} onChange={(e)=> setEditForm(prev=>({ ...prev, employee_name: e.target.value }))}>
+                    <option value="">Select Employee</option>
+                    <option value="all">All</option>
+                    {employees.map((e)=> (
+                      <option key={e.user_id} value={e.name}>{e.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 mt-4">
+                <button className="px-4 py-2 rounded border border-white/50 text-white hover:bg-white/20 transition-colors" onClick={()=> setEditOpen(false)}>Cancel</button>
+                <button className="px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition-colors" onClick={submitRequestChange}>Send Request</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Toast Message */}
+        {!!toast && (
+          <div className="fixed right-4 bottom-4 bg-green-600 text-white px-4 py-2 rounded shadow-lg">{toast}</div>
+        )}
+
+        {/* Admin Select Modal */}
+        {adminSelect.open && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+            <div className="bg-white/20 backdrop-blur-md border border-white/30 w-full max-w-sm rounded-lg shadow-xl p-6 text-white">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-lg font-semibold text-white">Select Admin</h3>
+                <button className="text-white/80 hover:text-white text-2xl font-bold" onClick={()=> setAdminSelect({ open: false, mode: '', kra: null, approver: '' })}>✕</button>
+              </div>
+              <select className="w-full border border-white/50 rounded p-2 bg-white/30 text-gray-900" value={adminSelect.approver} onChange={(e)=> setAdminSelect(prev=> ({ ...prev, approver: e.target.value }))}>
+                <option value="">Choose an Admin</option>
+                {admins.map(a => (
+                  <option key={a.user_id || a.email || a.name} value={a.name}>{a.name}</option>
+                ))}
+              </select>
+              <div className="flex justify-end gap-2 mt-4">
+                <button className="px-4 py-2 rounded border border-white/50 text-white hover:bg-white/20 transition-colors" onClick={()=> setAdminSelect({ open: false, mode: '', kra: null, approver: '' })}>Cancel</button>
+                <button className="px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition-colors" onClick={submitWithApprover}>Send</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-      {!!toast && (
-        <div className="fixed right-4 bottom-4 bg-green-600 text-white px-4 py-2 rounded shadow">{toast}</div>
-      )}
-      {adminSelect.open && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white w-full max-w-sm rounded shadow p-6">
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="text-lg font-semibold">Select Admin</h3>
-              <button className="text-gray-600" onClick={()=> setAdminSelect({ open: false, mode: '', kra: null, approver: '' })}>✕</button>
-            </div>
-            <select className="w-full border rounded p-2 text-black" value={adminSelect.approver} onChange={(e)=> setAdminSelect(prev=> ({ ...prev, approver: e.target.value }))}>
-              <option value="">Choose an Admin</option>
-              {admins.map(a => (
-                <option key={a.user_id || a.email || a.name} value={a.name}>{a.name}</option>
-              ))}
-            </select>
-            <div className="flex justify-end gap-2 mt-4">
-              <button className="px-4 py-2 rounded border" onClick={()=> setAdminSelect({ open: false, mode: '', kra: null, approver: '' })}>Cancel</button>
-              <button className="px-4 py-2 rounded bg-indigo-600 text-white" onClick={submitWithApprover}>Send</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

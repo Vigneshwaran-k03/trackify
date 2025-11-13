@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { getToken, getRole } from '../../utils/authStorage';
 
+// --- IMPORTANT ---
+// Import your background image like this
+import backgroundImage from '../../assets/background.png';
+
 export default function Create_KPI_Employee() {
   const [form, setForm] = useState({ name: '', def: '', kra_id: '', due_date: '', scoring_method: '', target: '' });
   const [kras, setKras] = useState([]);
@@ -130,159 +134,178 @@ export default function Create_KPI_Employee() {
   };
 
   return (
-    <div className="min-h-screen text-black mx-auto bg-white p-8 rounded-lg shadow">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold">Create & My KPI</h2>
-        <button onClick={()=>setShowModal(true)} className="bg-indigo-600 text-white px-4 py-2 rounded">New KPI</button>
-      </div>
-      {message && (
-        <div className="mb-4 p-3 rounded bg-green-50 text-green-800">{message}</div>
-      )}
-      <div className="mt-2">
-        <h3 className="text-xl font-semibold mb-2">My Created KPIs</h3>
-        <div className="mb-3 flex items-center gap-4">
-          <label className="text-sm mr-2">Filter:</label>
-          <select className="border rounded px-2 py-1" value={statusFilter} onChange={(e)=>setStatusFilter(e.target.value)}>
-            <option value="Active">Active</option>
-            <option value="End">End</option>
-            <option value="All">All</option>
-          </select>
-          <label className="text-sm">KRA:</label>
-          <select className="border rounded px-2 py-1" value={kraFilter} onChange={(e)=>setKraFilter(e.target.value)}>
-            <option value="">All</option>
-            {[...new Map(myKpis.map(k=>[k.kra_id, k.kra_name]))].map(([id, name]) => (
-              <option key={id} value={id}>{name}</option>
+    // New wrapper div for background image
+    <div
+      className="min-h-screen p-4 md:p-8"
+      style={{
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
+    >
+      {/* Main Frosted Glass Card */}
+      <div className="min-h-screen text-white mx-auto bg-white/20 backdrop-blur-md p-8 rounded-lg shadow-xl max-w-7xl">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-white">Create & My KPI</h2>
+          <button onClick={()=>setShowModal(true)} className="bg-indigo-600 text-white px-4 py-2 rounded">New KPI</button>
+        </div>
+        
+        {message && (
+          // This message styling is fine as it's a notification
+          <div className="mb-4 p-3 rounded bg-green-100 text-green-800">{message}</div>
+        )}
+        
+        <div className="mt-2">
+          <h3 className="text-xl font-semibold mb-2 text-white">My Created KPIs</h3>
+          <div className="mb-3 flex items-center gap-4">
+            <label className="text-sm mr-2 text-gray-100">Filter:</label>
+            <select className="border border-white/30 rounded px-2 py-1 bg-white/80 text-black" value={statusFilter} onChange={(e)=>setStatusFilter(e.target.value)}>
+              <option value="Active">Active</option>
+              <option value="End">End</option>
+              <option value="All">All</option>
+            </select>
+            <label className="text-sm text-gray-100">KRA:</label>
+            <select className="border border-white/30 rounded px-2 py-1 bg-white/80 text-black" value={kraFilter} onChange={(e)=>setKraFilter(e.target.value)}>
+              <option value="">All</option>
+              {[...new Map(myKpis.map(k=>[k.kra_id, k.kra_name]))].map(([id, name]) => (
+                <option key={id} value={id}>{name}</option>
+              ))}
+            </select>
+          </div>
+          
+          {!myKpis.length && <div className="text-sm text-gray-200">No KPIs created yet.</div>}
+          
+          <ul className="divide-y divide-white/20">
+            {filteredKpis.map(k => (
+              <li key={k.id} className="py-2 flex items-center justify-between">
+                <div>
+                  <div className="font-medium text-white">{k.name}</div>
+                  <div className="text-xs text-gray-200">KRA: {k.kra_name} • Due: {k.due_date ? new Date(k.due_date).toLocaleDateString() : '-'}</div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="text-xs text-gray-100">Status: {k.kpi_status}</div>
+                  {String(k.kpi_status || '').toLowerCase() !== 'end' && (
+                    <button className="px-2 py-1 border border-white/30 rounded text-white hover:bg-white/10" onClick={()=>openChange(k)}>Change</button>
+                  )}
+                </div>
+              </li>
             ))}
-          </select>
+          </ul>
         </div>
-        {!myKpis.length && <div className="text-sm text-gray-600">No KPIs created yet.</div>}
-        <ul className="divide-y">
-          {filteredKpis.map(k => (
-            <li key={k.id} className="py-2 flex items-center justify-between">
-              <div>
-                <div className="font-medium">{k.name}</div>
-                <div className="text-xs text-gray-600">KRA: {k.kra_name} • Due: {k.due_date ? new Date(k.due_date).toLocaleDateString() : '-'}</div>
+
+        {/* Create KPI Modal */}
+        {showModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-2xl bg-white/20 backdrop-blur-md text-white rounded-lg shadow-xl p-6 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white">Create KPI (Employee)</h3>
+                <button className="text-gray-100 hover:text-white text-2xl" onClick={()=>setShowModal(false)}>✕</button>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="text-xs">Status: {k.kpi_status}</div>
-                {String(k.kpi_status || '').toLowerCase() !== 'end' && (
-                  <button className="px-2 py-1 border rounded" onClick={()=>openChange(k)}>Change</button>
-                )}
+              {message && (
+                <div className="mb-4 p-3 rounded bg-blue-100 text-blue-800">{message}</div>
+              )}
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-100">KPI Name *</label>
+                  <input className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" name="name" placeholder="Enter KPI Name" value={form.name} onChange={handleChange} required />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-100">Definition *</label>
+                  <textarea className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" placeholder="Enter Definition" name="def" value={form.def} onChange={handleChange} rows={4} required />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-100">KRA *</label>
+                  <select className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" name="kra_id" value={form.kra_id} onChange={handleChange} required>
+                    <option value="">Select KRA</option>
+                    {kras.map(k => (
+                      <option key={k.kra_id} value={k.kra_id}>{k.name}</option>
+                    ))}
+                  </select>
+                  {selectedKra && (
+                    <p className="text-xs text-gray-200 mt-1">KRA Target: {typeof selectedKra.target === 'number' ? `${selectedKra.target}%` : '-'}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-100">Due Date *</label>
+                  <input type="date" className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" name="due_date" value={form.due_date} onChange={handleChange} required />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-100">Target (0-100)</label>
+                  <input type="number" min="0" max="100" className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" name="target" placeholder="e.g., 100" value={form.target} onChange={handleChange} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-100">Scoring Method *</label>
+                  <select className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" name="scoring_method" value={form.scoring_method} onChange={handleChange} required>
+                    <option value="">Select</option>
+                    <option value="Percentage">Percentage</option>
+                    <option value="Scale (1-5)">Scale (1-5)</option>
+                    <option value="Scale (1-10)">Scale (1-10)</option>
+                    <option value="Rating">Rating</option>
+                  </select>
+                </div>
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <button type="button" className="px-4 py-2 rounded border border-white/30 text-white hover:bg-white/10" onClick={()=>setShowModal(false)}>Cancel</button>
+                  <button type="submit" disabled={loading} className="bg-indigo-600 text-white px-6 py-2 rounded disabled:opacity-50">
+                    {loading ? 'Creating...' : 'Create KPI'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Edit/Request Change Modal */}
+        {editModal.open && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-2xl bg-white/20 backdrop-blur-md text-white rounded-lg shadow-xl p-6 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white">Request KPI Change</h3>
+                <button className="text-gray-100 hover:text-white text-2xl" onClick={()=>setEditModal({ open: false, kpi: null })}>✕</button>
               </div>
-            </li>
-          ))}
-        </ul>
+              {message && (
+                <div className="mb-4 p-3 rounded bg-blue-100 text-blue-800">{message}</div>
+              )}
+              <form onSubmit={(e)=>{ e.preventDefault(); submitRequest(); }} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-100">KPI Name *</label>
+                  <input className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" placeholder="Enter KPI Name" name="name" value={editForm.name} onChange={handleEditChange} required />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-100">Definition *</label>
+                  <textarea className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" placeholder="Enter Definition" name="def" value={editForm.def} onChange={handleEditChange} rows={4} required />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-100">Due Date *</label>
+                  <input type="date" className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" name="due_date" value={editForm.due_date} onChange={handleEditChange} required />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-100">Target (0-100)</label>
+                  <input type="number" min="0" max="100" className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" name="target" placeholder="e.g., 100" value={editForm.target} onChange={handleEditChange} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-100">Scoring Method *</label>
+                  <select className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" name="scoring_method" value={editForm.scoring_method} onChange={handleEditChange} required>
+                    <option value="">Select Scoring Method</option>
+                    <option value="Percentage">Percentage</option>
+                    <option value="Scale (1-5)">Scale (1-5)</option>
+                    <option value="Scale (1-10)">Scale (1-10)</option>
+                    <option value="Rating">Rating</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-100">Comment</label>
+                  <textarea className="w-full p-2 border border-white/30 rounded bg-white/80 text-black" placeholder="Reason for change (optional)" name="comment" value={editForm.comment} onChange={handleEditChange} rows={4} />
+                </div>
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <button type="button" className="px-4 py-2 rounded border border-white/30 text-white hover:bg-white/10" onClick={()=>setEditModal({ open: false, kpi: null })}>Cancel</button>
+                  <button type="submit" className="bg-indigo-600 text-white px-6 py-2 rounded">Submit Request</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
-
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-2xl bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Create KPI (Employee)</h3>
-              <button className="text-gray-600" onClick={()=>setShowModal(false)}>✕</button>
-            </div>
-            {message && (
-              <div className="mb-4 p-3 rounded bg-blue-50 text-blue-800">{message}</div>
-            )}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">KPI Name *</label>
-                <input className="w-full p-2 border rounded text-black" name="name" placeholder="Enter KPI Name" value={form.name} onChange={handleChange} required />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Definition *</label>
-                <textarea className="w-full p-2 border rounded text-black" placeholder="Enter Definition" name="def" value={form.def} onChange={handleChange} rows={4} required />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">KRA *</label>
-                <select className="w-full p-2 border rounded text-black" name="kra_id" value={form.kra_id} onChange={handleChange} required>
-                  <option value="">Select KRA</option>
-                  {kras.map(k => (
-                    <option key={k.kra_id} value={k.kra_id}>{k.name}</option>
-                  ))}
-                </select>
-                {selectedKra && (
-                  <p className="text-xs text-gray-600 mt-1">KRA Target: {typeof selectedKra.target === 'number' ? `${selectedKra.target}%` : '-'}</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm   font-medium mb-1">Due Date *</label>
-                <input type="date" className="w-full bg-gray-300 p-2 border rounded text-black" name="due_date" value={form.due_date} onChange={handleChange} required />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Target (0-100)</label>
-                <input type="number" min="0" max="100" className="w-full p-2 border rounded text-black" name="target" placeholder="e.g., 100" value={form.target} onChange={handleChange} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Scoring Method *</label>
-                <select className="w-full p-2 border rounded text-black" name="scoring_method" value={form.scoring_method} onChange={handleChange} required>
-                  <option value="">Select</option>
-                  <option value="Percentage">Percentage</option>
-                  <option value="Scale (1-5)">Scale (1-5)</option>
-                  <option value="Scale (1-10)">Scale (1-10)</option>
-                  <option value="Rating">Rating</option>
-                </select>
-              </div>
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button type="button" className="px-4 py-2 rounded border" onClick={()=>setShowModal(false)}>Cancel</button>
-                <button type="submit" disabled={loading} className="bg-indigo-600 text-white px-6 py-2 rounded disabled:opacity-50">
-                  {loading ? 'Creating...' : 'Create KPI'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {editModal.open && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50" style={{ zIndex: 99999 }}>
-          <div className="w-full max-w-2xl bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Request KPI Change</h3>
-              <button className="text-gray-600" onClick={()=>setEditModal({ open: false, kpi: null })}>✕</button>
-            </div>
-            {message && (
-              <div className="mb-4 p-3 rounded bg-blue-50 text-blue-800">{message}</div>
-            )}
-            <form onSubmit={(e)=>{ e.preventDefault(); submitRequest(); }} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">KPI Name *</label>
-                <input className="w-full p-2 border rounded text-black" placeholder="Enter KPI Name" name="name" value={editForm.name} onChange={handleEditChange} required />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Definition *</label>
-                <textarea className="w-full p-2 border rounded text-black" placeholder="Enter Definition" name="def" value={editForm.def} onChange={handleEditChange} rows={4} required />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Due Date *</label>
-                <input type="date" className="w-full p-2 border rounded text-black bg-gray-300" name="due_date" value={editForm.due_date} onChange={handleEditChange} required />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Target (0-100)</label>
-                <input type="number" min="0" max="100" className="w-full p-2 border rounded text-black" name="target" placeholder="e.g., 100" value={editForm.target} onChange={handleEditChange} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Scoring Method *</label>
-                <select className="w-full p-2 border rounded text-black" name="scoring_method" value={editForm.scoring_method} onChange={handleEditChange} required>
-                  <option value="">Select Scoring Method</option>
-                  <option value="Percentage">Percentage</option>
-                  <option value="Scale (1-5)">Scale (1-5)</option>
-                  <option value="Scale (1-10)">Scale (1-10)</option>
-                  <option value="Rating">Rating</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Comment</label>
-                <textarea className="w-full p-2 border rounded text-black" placeholder="Enter Comment" name="comment" value={editForm.comment} onChange={handleEditChange} rows={4} />
-              </div>
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button type="button" className="px-4 py-2 rounded border" onClick={()=>setEditModal({ open: false, kpi: null })}>Cancel</button>
-                <button type="submit" className="bg-indigo-600 text-white px-6 py-2 rounded">Submit Request</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from 'react';
-// summary export removed
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import axios from 'axios';
@@ -15,6 +14,10 @@ import female3 from '../../assets/profile_image/female3.png';
 import female4 from '../../assets/profile_image/female4.png';
 import female5 from '../../assets/profile_image/female5.png';
 
+// --- IMPORTANT ---
+// Import your background image like this
+import backgroundImage from '../../assets/background.png';
+
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 export default function ManagerProfile() {
@@ -28,7 +31,6 @@ export default function ManagerProfile() {
   const [cpOpen, setCpOpen] = useState(false);
   const [cpLoading, setCpLoading] = useState(false);
   const [cpMsg, setCpMsg] = useState('');
-  // export modal removed
   const fileRef = useRef(null);
 
   // Two gauges with independent filters (match ManagerDashboard profile UX)
@@ -164,124 +166,140 @@ export default function ManagerProfile() {
   }, [userId, gauge2Filter.year, gauge2Filter.month]);
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-semibold">My Profile</h3>
-        <button onClick={()=>setCpOpen(true)} className="px-3 py-2 rounded bg-indigo-600 text-white text-sm">Change Password</button>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <h4 className="font-medium mb-3">Personal Information</h4>
-          <div className="space-y-2">
-            <p><span className="font-medium">Name:</span> {userName}</p>
-            <p><span className="font-medium">Department:</span> {userDept}</p>
-            <p><span className="font-medium">Role:</span> Manager</p>
-            <p><span className="font-medium">Email:</span> {userEmail}</p>
-          </div>
+    // New wrapper div for background image
+    <div
+      className="min-h-screen p-4 md:p-8"
+      style={{
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
+    >
+      {/* Main Frosted Glass Card */}
+      <div className="bg-white/20 backdrop-blur-md p-6 rounded-lg shadow-xl max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-semibold text-white">My Profile</h3>
+          <button onClick={()=>setCpOpen(true)} className="px-3 py-2 rounded bg-indigo-600 text-white text-sm">Change Password</button>
         </div>
-        <div>
-          <h4 className="font-medium mb-3">Profile Picture</h4>
-          <div className="flex items-start gap-4">
-            <img src={pendingFile ? pendingAvatar : resolveAvatar(pendingAvatar || avatar)} alt="passport" className="w-[160px] h-[200px] object-cover border rounded" />
-            <div className="flex-1 space-y-2">
-              <div className="grid grid-cols-5 gap-3">
-                {['male1','male2','male3','male4','male5','female1','female2','female3','female4','female5'].map(key=> (
-                  <button type="button" key={key} onClick={()=>selectDefault(key)} className={`border rounded overflow-hidden focus:outline-none ${(pendingAvatar===`default:${key}`) || (!pendingAvatar && avatar===`default:${key}`) ? 'ring-2 ring-indigo-500' : ''}`}>
-                    <img src={resolveAvatar(`default:${key}`)} alt={key} className="w-16 h-16 object-cover" />
-                  </button>
-                ))}
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-1 block">Upload from device</label>
-                <input ref={fileRef} type="file" accept="image/*" onChange={onUpload} className="hidden" />
-                <button type="button" onClick={()=>fileRef.current?.click()} className="px-3 py-2 rounded border text-sm">Choose from local</button>
-              </div>
-              <div className="pt-1 flex justify-end">
-                <button type="button" onClick={saveAvatar} disabled={!pendingAvatar}
-                  className="px-3 py-2 rounded bg-indigo-600 text-white text-sm disabled:opacity-60">
-                  Change Profile
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-8">
-        <h4 className="font-medium mb-4">My Performance</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="border rounded p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="font-medium"></div>
-              <div className="flex items-center gap-2">
-                <input type="number" className="p-2 border rounded w-24" value={gauge1Filter.year} onChange={(e)=>setGauge1Filter(prev=>({ ...prev, year: Number(e.target.value) }))} />
-                <select className="p-2 border rounded" value={gauge1Filter.month} onChange={(e)=>setGauge1Filter(prev=>({ ...prev, month: Number(e.target.value) }))}>
-                  {Array.from({length:12},(_,i)=>i+1).map(m=> <option key={m} value={m}>{m}</option>)}
-                </select>
-              </div>
-            </div>
-            <div className="max-w-xs mx-auto">
-              <Doughnut
-                data={{ labels:['Avg Score','Remaining'], datasets:[{ data:[Math.max(0, Math.min(100, gauge1Avg)), Math.max(0, 100 - Math.max(0, Math.min(100, gauge1Avg)))], backgroundColor:[gauge1Avg >= gauge1Target ? '#10b981' : '#fca5a5', '#e5e7eb'], borderWidth:0, cutout:'70%' }] }}
-                options={{ responsive:true, plugins:{ legend:{ display:false }, tooltip:{ enabled:true } } }}
-              />
-              <div className="text-center mt-2 text-xl font-semibold">{gauge1Avg}%</div>
-              <div className="text-center text-sm text-gray-600">Target: {gauge1Target}%</div>
+          <div>
+            <h4 className="font-medium mb-3 text-gray-100">Personal Information</h4>
+            <div className="space-y-2 text-white">
+              <p><span className="font-medium text-gray-200">Name:</span> {userName}</p>
+              <p><span className="font-medium text-gray-200">Department:</span> {userDept}</p>
+              <p><span className="font-medium text-gray-200">Role:</span> Manager</p>
+              <p><span className="font-medium text-gray-200">Email:</span> {userEmail}</p>
             </div>
           </div>
-          <div className="border rounded p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="font-medium"></div>
-              <div className="flex items-center gap-2">
-                <input type="number" className="p-2 border rounded w-24" value={gauge2Filter.year} onChange={(e)=>setGauge2Filter(prev=>({ ...prev, year: Number(e.target.value) }))} />
-                <select className="p-2 border rounded" value={gauge2Filter.month} onChange={(e)=>setGauge2Filter(prev=>({ ...prev, month: Number(e.target.value) }))}>
-                  {Array.from({length:12},(_,i)=>i+1).map(m=> <option key={m} value={m}>{m}</option>)}
-                </select>
+          <div>
+            <h4 className="font-medium mb-3 text-gray-100">Profile Picture</h4>
+            <div className="flex items-start gap-4">
+              <img src={pendingFile ? pendingAvatar : resolveAvatar(pendingAvatar || avatar)} alt="passport" className="w-[160px] h-[200px] object-cover border border-white/30 rounded" />
+              <div className="flex-1 space-y-2">
+                <div className="grid grid-cols-5 gap-3">
+                  {['male1','male2','male3','male4','male5','female1','female2','female3','female4','female5'].map(key=> (
+                    <button type="button" key={key} onClick={()=>selectDefault(key)} className={`border border-white/30 rounded overflow-hidden focus:outline-none ${(pendingAvatar===`default:${key}`) || (!pendingAvatar && avatar===`default:${key}`) ? 'ring-2 ring-indigo-400' : ''}`}>
+                      <img src={resolveAvatar(`default:${key}`)} alt={key} className="w-16 h-16 object-cover" />
+                    </button>
+                  ))}
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-1 block text-gray-100">Upload from device</label>
+                  <input ref={fileRef} type="file" accept="image/*" onChange={onUpload} className="hidden" />
+                  <button type="button" onClick={()=>fileRef.current?.click()} className="px-3 py-2 rounded border border-white/30 text-sm text-white hover:bg-white/10">Choose from local</button>
+                </div>
+                <div className="pt-1 flex justify-end">
+                  <button type="button" onClick={saveAvatar} disabled={!pendingAvatar}
+                    className="px-3 py-2 rounded bg-indigo-600 text-white text-sm disabled:opacity-60">
+                    Change Profile
+                  </button>
+                </div>
               </div>
-            </div>
-            <div className="max-w-xs mx-auto">
-              <Doughnut
-                data={{ labels:['Avg Score','Remaining'], datasets:[{ data:[Math.max(0, Math.min(100, gauge2Avg)), Math.max(0, 100 - Math.max(0, Math.min(100, gauge2Avg)))], backgroundColor:[gauge2Avg >= gauge2Target ? '#10b981' : '#fca5a5', '#e5e7eb'], borderWidth:0, cutout:'70%' }] }}
-                options={{ responsive:true, plugins:{ legend:{ display:false }, tooltip:{ enabled:true } } }}
-              />
-              <div className="text-center mt-2 text-xl font-semibold">{gauge2Avg}%</div>
-              <div className="text-center text-sm text-gray-600">Target: {gauge2Target}%</div>
             </div>
           </div>
         </div>
-        <div className="text-sm text-gray-600 mt-2">Each gauge shows average of Admin reviews on your KRAs for the selected month.</div>
+
+        <div className="mt-8">
+          <h4 className="font-medium mb-4 text-gray-100">My Performance</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Gauge 1 Card */}
+            <div className="border border-white/30 rounded p-4 bg-white/10">
+              <div className="flex items-center justify-between mb-3">
+                <div className="font-medium"></div>
+                <div className="flex items-center gap-2">
+                  <input type="number" className="p-2 border border-white/30 rounded w-24 bg-white/80 text-black" value={gauge1Filter.year} onChange={(e)=>setGauge1Filter(prev=>({ ...prev, year: Number(e.target.value) }))} />
+                  <select className="p-2 border border-white/30 rounded bg-white/80 text-black" value={gauge1Filter.month} onChange={(e)=>setGauge1Filter(prev=>({ ...prev, month: Number(e.target.value) }))}>
+                    {Array.from({length:12},(_,i)=>i+1).map(m=> <option key={m} value={m}>{m}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="max-w-xs mx-auto">
+                <Doughnut
+                  data={{ labels:['Avg Score','Remaining'], datasets:[{ data:[Math.max(0, Math.min(100, gauge1Avg)), Math.max(0, 100 - Math.max(0, Math.min(100, gauge1Avg)))], backgroundColor:[gauge1Avg >= gauge1Target ? '#10b981' : '#fca5a5', '#e5e7eb'], borderWidth:0, cutout:'70%' }] }}
+                  options={{ responsive:true, plugins:{ legend:{ display:false }, tooltip:{ enabled:true } } }}
+                />
+                <div className="text-center mt-2 text-xl font-semibold text-white">{gauge1Avg}%</div>
+                <div className="text-center text-sm text-gray-200">Target: {gauge1Target}%</div>
+              </div>
+            </div>
+            {/* Gauge 2 Card */}
+            <div className="border border-white/30 rounded p-4 bg-white/10">
+              <div className="flex items-center justify-between mb-3">
+                <div className="font-medium"></div>
+                <div className="flex items-center gap-2">
+                  <input type="number" className="p-2 border border-white/30 rounded w-24 bg-white/80 text-black" value={gauge2Filter.year} onChange={(e)=>setGauge2Filter(prev=>({ ...prev, year: Number(e.target.value) }))} />
+                  <select className="p-2 border border-white/30 rounded bg-white/80 text-black" value={gauge2Filter.month} onChange={(e)=>setGauge2Filter(prev=>({ ...prev, month: Number(e.target.value) }))}>
+                    {Array.from({length:12},(_,i)=>i+1).map(m=> <option key={m} value={m}>{m}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="max-w-xs mx-auto">
+                <Doughnut
+                  data={{ labels:['Avg Score','Remaining'], datasets:[{ data:[Math.max(0, Math.min(100, gauge2Avg)), Math.max(0, 100 - Math.max(0, Math.min(100, gauge2Avg)))], backgroundColor:[gauge2Avg >= gauge2Target ? '#10b981' : '#fca5a5', '#e5e7eb'], borderWidth:0, cutout:'70%' }] }}
+                  options={{ responsive:true, plugins:{ legend:{ display:false }, tooltip:{ enabled:true } } }}
+                />
+                <div className="text-center mt-2 text-xl font-semibold text-white">{gauge2Avg}%</div>
+                <div className="text-center text-sm text-gray-200">Target: {gauge2Target}%</div>
+              </div>
+            </div>
+          </div>
+          <div className="text-sm text-gray-200 mt-2">Each gauge shows average of Admin reviews on your KRAs for the selected month.</div>
+        </div>
+
+        {/* Change Password Modal */}
+        {cpOpen && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+            <div className="bg-white/20 backdrop-blur-md w-full max-w-md rounded-lg shadow-xl p-6">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-lg font-semibold text-white">Change Password</h4>
+                <button onClick={()=>setCpOpen(false)} className="text-gray-100 hover:text-white">✕</button>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm mb-1 text-gray-100">Email</label>
+                  <input disabled value={userEmail} className="w-full p-2 border border-white/30 rounded bg-gray-200/80 text-gray-700" />
+                </div>
+                <button
+                  onClick={async()=>{
+                    try {
+                      setCpLoading(true); setCpMsg('');
+                      await fetch('http://localhost:3000/auth/change-init', { method:'POST', headers:{ 'Content-Type':'application/json', Authorization: `Bearer ${getToken()}` }});
+                      setCpMsg('You may login your account');
+                      setTimeout(()=> setCpOpen(false), 1500);
+                    } catch { setCpMsg('Failed to send verification'); }
+                    finally { setCpLoading(false); }
+                  }}
+                  className="px-4 py-2 rounded bg-indigo-600 text-white disabled:opacity-60"
+                  disabled={cpLoading}
+                >{cpLoading? 'Sending...' : 'Send verification'}</button>
+                {cpMsg && <div className="text-sm text-emerald-300">{cpMsg}</div>}
+              </div>
+            </div>
+          </div>
+        )}
+        
       </div>
-      {cpOpen && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white w-full max-w-md rounded shadow p-6">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-lg font-semibold">Change Password</h4>
-              <button onClick={()=>setCpOpen(false)} className="text-gray-600">✕</button>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm mb-1">Email</label>
-                <input disabled value={userEmail} className="w-full p-2 border rounded bg-gray-100" />
-              </div>
-              <button
-                onClick={async()=>{
-                  try {
-                    setCpLoading(true); setCpMsg('');
-                    await fetch('http://localhost:3000/auth/change-init', { method:'POST', headers:{ 'Content-Type':'application/json', Authorization: `Bearer ${getToken()}` }});
-                    setCpMsg('You may login your account');
-                    setTimeout(()=> setCpOpen(false), 1500);
-                  } catch { setCpMsg('Failed to send verification'); }
-                  finally { setCpLoading(false); }
-                }}
-                className="px-4 py-2 rounded bg-indigo-600 text-white disabled:opacity-60"
-                disabled={cpLoading}
-              >{cpLoading? 'Sending...' : 'Send verification'}</button>
-              {cpMsg && <div className="text-sm text-emerald-700">{cpMsg}</div>}
-            </div>
-          </div>
-        </div>
-      )}
-      {/* export modal removed */}
     </div>
   );
 }
