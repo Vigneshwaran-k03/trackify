@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+/* Ensure full-viewport sizing and remove default margins to avoid gaps */
+html, body, #root {
+  height: 100%;
+}
+body {
+  margin: 0;
+  background: transparent;
+}
+

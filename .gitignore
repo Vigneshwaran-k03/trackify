@@ -1,0 +1,231 @@
+# Global ignores to keep repo code-only
+
+# Node and build outputs
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+build/
+**/build/
+.dist/
+.output/
+.next/
+out/
+.vercel/
+.vite/
+.turbo/
+.parcel-cache/
+
+# Coverage and reports
+coverage/
+.nyc_output/
+report.*.json
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment files (never commit secrets)
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Uploads and generated content
+uploads/
+**/uploads/
+backend/uploads/
+frontend/public/uploads/
+
+# Ignore common image and binary assets
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.webp
+*.ico
+*.bmp
+*.tif
+*.tiff
+*.heic
+*.heif
+*.psd
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE/editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.project
+.classpath
+.settings/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Local history
+.history/
+.temp/
+.tmp/
+# compiled output
+/dist
+/node_modules
+/build
+
+# Runtime uploads and generated content
+backend/uploads/
+uploads/
+**/uploads/
+
+# Ignore common image and binary assets (code-only repo)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.webp
+*.ico
+*.bmp
+*.tif
+*.tiff
+*.heic
+*.heif
+*.psd
+
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS
+.DS_Store
+
+# Tests
+/coverage
+/.nyc_output
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+.env.*
+
+# Build caches and coverage
+.cache/
+coverage/
+.nyc_output/
+
+# Editor local history
+.history/
+
+# temp directory
+.temp
+.tmp
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Build outputs
+build/
+.output/
+.next/
+out/
+.vercel/
+
+# Environment files (never commit secrets)
+.env
+.env.*
+
+# Uploads and generated content
+frontend/public/uploads/
+public/uploads/
+**/uploads/
+
+# Ignore common image and binary assets (code-only repo)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.webp
+*.ico
+*.bmp
+*.tif
+*.tiff
+*.heic
+*.heif
+*.psd
+
+# Caches and coverage
+.cache/
+coverage/
+.nyc_output/
+.turbo/
+.vite/
+.parcel-cache/
+
+# Editor local history
+.history/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
