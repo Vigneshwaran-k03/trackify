@@ -1005,7 +1005,13 @@ export default function ManagerDashboard() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3">
               <h4 className="font-medium text-white mb-2 sm:mb-0">KRA Scores (Assigned to Me)</h4>
               <div className="flex items-center gap-2 relative">
-                <button className="px-3 py-2 rounded bg-gray-800/70 text-white text-sm" onClick={()=>setExp1Open((v)=>!v)}>Export</button>
+
+                <select className="p-2 border border-white/50 rounded bg-white/30 text-gray-900 text-sm" value={ovB1Type} onChange={(e)=>setOvB1Type(e.target.value)}>
+                  <option value="bar">Bar</option>
+                  <option value="line">Line</option>
+                  <option value="pie">Pie</option>
+                </select>
+                <button className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500 disabled:opacity-50" onClick={()=>setExp1Open((v)=>!v)}>Export</button>
                 {exp1Open && (
                   <div className="absolute right-0 top-10 bg-gray-800/90 backdrop-blur-md border border-white/30 rounded shadow text-sm z-20">
                     <button className="block px-3 py-2 text-white hover:bg-gray-700 w-full text-left" onClick={()=>{ setExp1Open(false); exportChartFromRef(ovB1Ref,'kra_assigned','png'); }}>PNG</button>
@@ -1013,11 +1019,6 @@ export default function ManagerDashboard() {
                     <button className="block px-3 py-2 text-white hover:bg-gray-700 w-full text-left" onClick={()=>{ setExp1Open(false); exportChartFromRef(ovB1Ref,'kra_assigned','pdf'); }}>PDF</button>
                   </div>
                 )}
-                <select className="p-2 border border-white/50 rounded bg-white/30 text-gray-900 text-sm" value={ovB1Type} onChange={(e)=>setOvB1Type(e.target.value)}>
-                  <option value="bar">Bar</option>
-                  <option value="line">Line</option>
-                  <option value="pie">Pie</option>
-                </select>
               </div>
             </div>
             {(()=>{
@@ -1067,7 +1068,7 @@ export default function ManagerDashboard() {
                   <option value="line">Line</option>
                 </select>
                 <div className="relative">
-                  <button className="px-3 py-2 rounded bg-gray-800/70 text-white text-sm" onClick={()=>setExp2Open(v=>!v)}>Export</button>
+                  <button className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500 disabled:opacity-50" onClick={()=>setExp2Open(v=>!v)}>Export</button>
                   {exp2Open && (
                     <div className="absolute right-0 top-10 bg-gray-800/90 backdrop-blur-md border border-white/30 rounded shadow text-sm z-20">
                       <button className="block px-3 py-2 text-white hover:bg-gray-700 w-full text-left" onClick={()=>{ setExp2Open(false); exportChartFromRef(ovB2Ref,'kpi_selected_kra','png'); }}>PNG</button>
@@ -1103,8 +1104,14 @@ export default function ManagerDashboard() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3">
               <h4 className="font-medium text-white mb-2 sm:mb-0">KRA Scores (by Frequency)</h4>
               <div className="flex items-center gap-2 relative">
-                <button className="px-3 py-2 rounded bg-indigo-600 text-white text-sm" onClick={()=>setOvB3FilterOpen(true)}>Filter</button>
-                <button className="px-3 py-2 rounded bg-gray-800/70 text-white text-sm" onClick={()=>setExp3Open(v=>!v)}>Export</button>
+               
+                <select className="p-2 border border-white/50 rounded bg-white/30 text-gray-900 text-sm" value={ovB3Type} onChange={(e)=>setOvB3Type(e.target.value)}>
+                  <option value="bar">Bar</option>
+                  <option value="line">Line</option>
+                  <option value="pie">Pie</option>
+                </select>
+                 <button className="px-3 py-2 rounded bg-indigo-600 text-white text-sm" onClick={()=>setOvB3FilterOpen(true)}>Filter</button>
+                <button className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500 disabled:opacity-50" onClick={()=>setExp3Open(v=>!v)}>Export</button>
                 {exp3Open && (
                   <div className="absolute right-0 top-10 bg-gray-800/90 backdrop-blur-md border border-white/30 rounded shadow text-sm z-20">
                     <button className="block px-3 py-2 text-white hover:bg-gray-700 w-full text-left" onClick={()=>{ setExp3Open(false); exportChartFromRef(ovB3Ref,'kra_frequency','png'); }}>PNG</button>
@@ -1112,11 +1119,6 @@ export default function ManagerDashboard() {
                     <button className="block px-3 py-2 text-white hover:bg-gray-700 w-full text-left" onClick={()=>{ setExp3Open(false); exportChartFromRef(ovB3Ref,'kra_frequency','pdf'); }}>PDF</button>
                   </div>
                 )}
-                <select className="p-2 border border-white/50 rounded bg-white/30 text-gray-900 text-sm" value={ovB3Type} onChange={(e)=>setOvB3Type(e.target.value)}>
-                  <option value="bar">Bar</option>
-                  <option value="line">Line</option>
-                  <option value="pie">Pie</option>
-                </select>
               </div>
             </div>
             {(()=>{
@@ -1155,8 +1157,14 @@ export default function ManagerDashboard() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3">
               <h4 className="font-medium text-white mb-2 sm:mb-0">KPI Scores (by Frequency)</h4>
               <div className="flex items-center gap-2 relative">
-                <button className="px-3 py-2 rounded bg-indigo-600 text-white text-sm" onClick={()=>setOvB4FilterOpen(true)}>Filter</button>
-                <button className="px-3 py-2 rounded bg-gray-800/70 text-white text-sm" onClick={()=>setExp4Open(v=>!v)}>Export</button>
+               
+                <select className="p-2 border border-white/50 rounded bg-white/30 text-gray-900 text-sm" value={ovB4Type} onChange={(e)=>setOvB4Type(e.target.value)}>
+                  <option value="bar">Bar</option>
+                  <option value="line">Line</option>
+                  <option value="pie">Pie</option>
+                </select>
+                 <button className="px-3 py-2 rounded bg-indigo-600 text-white text-sm" onClick={()=>setOvB4FilterOpen(true)}>Filter</button>
+                <button className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500 disabled:opacity-50" onClick={()=>setExp4Open(v=>!v)}>Export</button>
                 {exp4Open && (
                   <div className="absolute right-0 top-10 bg-gray-800/90 backdrop-blur-md border border-white/30 rounded shadow text-sm z-20">
                     <button className="block px-3 py-2 text-white hover:bg-gray-700 w-full text-left" onClick={()=>{ setExp4Open(false); exportChartFromRef(ovB4Ref,'kpi_frequency','png'); }}>PNG</button>
@@ -1164,11 +1172,6 @@ export default function ManagerDashboard() {
                     <button className="block px-3 py-2 text-white hover:bg-gray-700 w-full text-left" onClick={()=>{ setExp4Open(false); exportChartFromRef(ovB4Ref,'kpi_frequency','pdf'); }}>PDF</button>
                   </div>
                 )}
-                <select className="p-2 border border-white/50 rounded bg-white/30 text-gray-900 text-sm" value={ovB4Type} onChange={(e)=>setOvB4Type(e.target.value)}>
-                  <option value="bar">Bar</option>
-                  <option value="line">Line</option>
-                  <option value="pie">Pie</option>
-                </select>
               </div>
             </div>
             {(()=>{
@@ -1200,7 +1203,7 @@ export default function ManagerDashboard() {
               <h4 className="font-medium text-white mb-2 sm:mb-0">KRA and KPI by Frequency</h4>
               <div className="flex items-center gap-2 relative">
                 <button className="px-3 py-2 rounded bg-indigo-600 text-white text-sm" onClick={()=>setOvB5FilterOpen(true)}>Filter</button>
-                <button className="px-3 py-2 rounded bg-gray-800/70 text-white text-sm" onClick={()=>setExp5Open(v=>!v)}>Export</button>
+                <button className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500 disabled:opacity-50" onClick={()=>setExp5Open(v=>!v)}>Export</button>
                 {exp5Open && (
                   <div className="absolute right-0 top-10 bg-gray-800/90 backdrop-blur-md border border-white/30 rounded shadow text-sm z-20">
                     <button className="block px-3 py-2 text-white hover:bg-gray-700 w-full text-left" onClick={()=>{ setExp5Open(false); exportChartFromRef(ovB5KraRef,'kra_by_frequency','png'); exportChartFromRef(ovB5KpiRef,'kpi_by_frequency','png'); }}>PNG</button>
@@ -1285,29 +1288,6 @@ export default function ManagerDashboard() {
         </div>
       </div>
     ),
-    comments: (
-      <div className="bg-white/20 backdrop-blur-sm border border-white/30 p-4 md:p-6 rounded-lg shadow-lg">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3">
-          <h4 className="font-medium text-white text-xl mb-2 sm:mb-0">My Comments</h4>
-          <div className="flex items-center gap-2">
-            <input type="number" className="p-2 border border-white/50 rounded bg-white/30 text-gray-900 w-24" value={perfFilter.year} onChange={(e)=>setPerfFilter(prev=>({ ...prev, year: Number(e.target.value) }))} />
-            <select className="p-2 border border-white/50 rounded bg-white/30 text-gray-900" value={perfFilter.month} onChange={(e)=>setPerfFilter(prev=>({ ...prev, month: Number(e.target.value) }))}>
-              {Array.from({length:12},(_,i)=>i+1).map(m=> <option key={m} value={m}>{m}</option>)}
-            </select>
-          </div>
-        </div>
-        <div className="space-y-3">
-          {perfReviews.map((r, idx)=> (
-            <div key={idx} className="border border-white/30 bg-black/10 rounded p-3">
-              <div className="flex items-center justify-between text-sm text-white/80"><span><span className="font-medium text-white">KRA:</span> {r.kra_name}</span><span>{r.review_at ? new Date(r.review_at).toLocaleDateString() : ''}</span></div>
-              <div className="text-sm mt-1 text-white/80"><span className="font-medium text-white">Score:</span> {r.score}</div>
-              <div className="text-sm mt-1 text-white/80"><span className="font-medium text-white">Comment:</span> <span dangerouslySetInnerHTML={{ __html: r.comment ? renderCommentHtml(r.comment) : '-' }} /></div>
-            </div>
-          ))}
-          {perfReviews.length===0 && <div className="text-white/70">No comments for this month.</div>}
-        </div>
-      </div>
-    ),
     tasks: (
       <div className="bg-white/20 backdrop-blur-sm border border-white/30 p-4 md:p-6 rounded-lg shadow-lg">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4">
@@ -1330,7 +1310,7 @@ export default function ManagerDashboard() {
               );
             })()}
             <div className="relative">
-              <button className="px-3 py-2 rounded bg-gray-800/70 text-white text-sm" onClick={()=>setExpTasksOpen(v=>!v)}>Export</button>
+              <button className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500 disabled:opacity-50" onClick={()=>setExpTasksOpen(v=>!v)}>Export</button>
               {expTasksOpen && (
                 <div className="absolute right-0 top-10 bg-gray-800/90 backdrop-blur-md border border-white/30 rounded shadow text-sm z-20">
                   <button className="block px-3 py-2 text-white hover:bg-gray-700 w-full text-left" onClick={()=>{ setExpTasksOpen(false); exportTableToExcel('#mgr-tasks-table','manager-tasks.xls'); }}>Excel</button>
@@ -1423,7 +1403,7 @@ export default function ManagerDashboard() {
               ))}
             </select>
             <div className="relative">
-              <button className="px-3 py-2 rounded bg-gray-800/70 text-white text-sm" onClick={()=>setExpTeamOpen(v=>!v)}>Export</button>
+              <button className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500 disabled:opacity-50" onClick={()=>setExpTeamOpen(v=>!v)}>Export</button>
               {expTeamOpen && (
                 <div className="absolute right-0 top-10 bg-gray-800/90 backdrop-blur-md border border-white/30 rounded shadow text-sm z-20">
                   <button className="block px-3 py-2 text-white hover:bg-gray-700 w-full text-left" onClick={()=>{ setExpTeamOpen(false); exportTableToExcel('#mgr-team-table','manager-team.xls'); }}>Excel</button>
@@ -1482,7 +1462,7 @@ export default function ManagerDashboard() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4">
           <h3 className="text-xl font-semibold text-white mb-2 sm:mb-0">My KRAs</h3>
           <div className="relative">
-            <button className="px-3 py-2 rounded bg-gray-800/70 text-white text-sm" onClick={()=>setExpKrasListOpen(v=>!v)}>Export</button>
+            <button className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500 disabled:opacity-50" onClick={()=>setExpKrasListOpen(v=>!v)}>Export</button>
             {expKrasListOpen && (
               <div className="absolute right-0 top-10 bg-gray-800/90 backdrop-blur-md border border-white/30 rounded shadow text-sm z-20">
                 <button className="block px-3 py-2 text-white hover:bg-gray-700 w-full text-left" onClick={()=>{
@@ -1616,7 +1596,7 @@ export default function ManagerDashboard() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3">
             <h3 className="text-xl font-semibold text-white mb-2 sm:mb-0">My Reviews</h3>
             <div className="relative">
-              <button className="px-3 py-2 border border-white/50 text-white rounded text-sm" onClick={(e)=>{ const m=e.currentTarget.nextSibling; if (m) m.classList.toggle('hidden'); }}>Export</button>
+              <button className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500 disabled:opacity-50" onClick={(e)=>{ const m=e.currentTarget.nextSibling; if (m) m.classList.toggle('hidden'); }}>Export</button>
               <div className="absolute right-0 mt-1 bg-gray-800/90 backdrop-blur-md border border-white/30 rounded shadow hidden z-20">
                 <button className="block w-full text-left px-3 py-2 text-white hover:bg-gray-700" onClick={()=>exportTableToCSV('#manager-myreviews-table','my-reviews.csv')}>CSV</button>
                 <button className="block w-full text-left px-3 py-2 text-white hover:bg-gray-700" onClick={()=>exportTableToExcel('#manager-myreviews-table','my-reviews.xls')}>Excel</button>
@@ -1656,6 +1636,30 @@ export default function ManagerDashboard() {
         </div>
       </div>
     ),
+    comments: (
+      <div className="bg-white/20 backdrop-blur-sm border border-white/30 p-4 md:p-6 rounded-lg shadow-lg">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3">
+          <h4 className="font-medium text-white text-xl mb-2 sm:mb-0">My Comments</h4>
+          <div className="flex items-center gap-2">
+            <input type="number" className="p-2 border border-white/50 rounded bg-white/30 text-gray-900 w-24" value={perfFilter.year} onChange={(e)=>setPerfFilter(prev=>({ ...prev, year: Number(e.target.value) }))} />
+            <select className="p-2 border border-white/50 rounded bg-white/30 text-gray-900" value={perfFilter.month} onChange={(e)=>setPerfFilter(prev=>({ ...prev, month: Number(e.target.value) }))}>
+              {Array.from({length:12},(_,i)=>i+1).map(m=> <option key={m} value={m}>{m}</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="space-y-3">
+          {perfReviews.map((r, idx)=> (
+            <div key={idx} className="border border-white/30 bg-black/10 rounded p-3">
+              <div className="flex items-center justify-between text-sm text-white/80"><span><span className="font-medium text-white">KRA:</span> {r.kra_name}</span><span>{r.review_at ? new Date(r.review_at).toLocaleDateString() : ''}</span></div>
+              <div className="text-sm mt-1 text-white/80"><span className="font-medium text-white">Score:</span> {r.score}</div>
+              <div className="text-sm mt-1 text-white/80"><span className="font-medium text-white">Comment:</span> <span dangerouslySetInnerHTML={{ __html: r.comment ? renderCommentHtml(r.comment) : '-' }} /></div>
+            </div>
+          ))}
+          {perfReviews.length===0 && <div className="text-white/70">No comments for this month.</div>}
+        </div>
+      </div>
+    ),
+
   };
 
   return (
