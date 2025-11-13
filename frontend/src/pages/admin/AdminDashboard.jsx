@@ -164,7 +164,7 @@ export default function AdminDashboard() {
     run();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [revDept]);
-
+//summary
   // Review: when KRA changes, load its active KPIs
   useEffect(() => {
     const run = async () => {
