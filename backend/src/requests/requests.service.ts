@@ -197,18 +197,26 @@ export class RequestsService {
     }
 
     const changes: Record<string, { from: any; to: any }> = {};
+    
+    // Only apply the fields that were actually changed in the request
     const apply = (key: keyof Kra, toVal: any) => {
+      // Skip if the field wasn't included in the requested changes
+      if (!(key in requested)) return;
+      
       const fromVal: any = (kra as any)[key];
-      if (toVal !== undefined && fromVal !== toVal) {
-        (kra as any)[key] = toVal;
+      // Only update if the value is different
+      if (fromVal !== toVal) {
         changes[String(key)] = { from: fromVal ?? null, to: toVal };
+        (kra as any)[key] = toVal;
       }
     };
-    if ('name' in requested) apply('name', requested.name);
-    if ('definition' in requested) apply('definition', requested.definition);
-    if ('target' in requested) apply('target', requested.target);
-    if ('manager_name' in requested) apply('manager_name', requested.manager_name);
-    if ('employee_name' in requested) apply('employee_name', requested.employee_name);
+
+    // Apply only the fields that were included in the request
+    if (requested.name !== undefined) apply('name', requested.name);
+    if (requested.definition !== undefined) apply('definition', requested.definition);
+    if (requested.target !== undefined) apply('target', requested.target);
+    if (requested.manager_name !== undefined) apply('manager_name', requested.manager_name);
+    if (requested.employee_name !== undefined) apply('employee_name', requested.employee_name);
 
     const updated = await this.kraRepo.save(kra);
 
@@ -442,19 +450,26 @@ export class RequestsService {
     }
 
     const changes: Record<string, { from: any; to: any }> = {};
+    
+    // Only apply the fields that were actually changed in the request
     const apply = (key: keyof Kpi, toVal: any) => {
+      // Skip if the field wasn't included in the requested changes
+      if (!(key in requested)) return;
+      
       const fromVal: any = (kpi as any)[key];
-      if (toVal !== undefined && fromVal !== toVal) {
-        (kpi as any)[key] = toVal;
+      // Only update if the value is different
+      if (fromVal !== toVal) {
         changes[String(key)] = { from: fromVal ?? null, to: toVal };
+        (kpi as any)[key] = toVal;
       }
     };
 
-    if ('name' in requested) apply('name', requested.name);
-    if ('def' in requested) apply('def', requested.def);
-    if ('due_date' in requested) apply('due_date', requested.due_date);
-    if ('scoring_method' in requested) apply('scoring_method', requested.scoring_method);
-    if ('target' in requested) apply('target', requested.target);
+    // Apply only the fields that were included in the request
+    if (requested.name !== undefined) apply('name', requested.name);
+    if (requested.def !== undefined) apply('def', requested.def);
+    if (requested.due_date !== undefined) apply('due_date', requested.due_date);
+    if (requested.scoring_method !== undefined) apply('scoring_method', requested.scoring_method);
+    if (requested.target !== undefined) apply('target', requested.target);
 
     // Refresh status based on possibly updated due_date
     try {
