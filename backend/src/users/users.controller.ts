@@ -122,9 +122,12 @@ export class UsersController {
     }),
     fileFilter: (req, file, cb) => {
       const ok = /\.(png|jpg|jpeg|gif|webp)$/i.test(file.originalname || '');
-      cb(ok ? null : new BadRequestException('Invalid file type'), ok);
+      cb(ok ? null : new BadRequestException('Only image files (PNG, JPG, JPEG, GIF, WEBP) are allowed'), ok);
     },
-    limits: { fileSize: 2 * 1024 * 1024 }
+    limits: { 
+      fileSize: 10 * 1024 * 1024, // 10MB limit
+      files: 1
+    }
   }))
   async uploadAvatar(@Request() req, @UploadedFile() file: any) {
     const userId = req.user?.userId || req.user?.user_id || req.user?.id;

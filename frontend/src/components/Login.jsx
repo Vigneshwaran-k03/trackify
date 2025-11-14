@@ -118,25 +118,25 @@ export default function Login() {
             placeholder="name@company.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-3 mb-4 rounded-full border border-white/60 bg-transparent text-black placeholder-gray-500 caret-black focus:outline-none focus:ring-2 focus:ring-white focus:border-white"
+            className="w-full p-3 mb-4 rounded-full border border-white/60 bg-transparent text-black placeholder-white caret-white focus:outline-none focus:ring-2 focus:ring-white focus:border-white"
           />
 
           <label className="block text-white/90 text-sm mb-1">Password</label>
           <input
             type="password"
-            placeholder="••••••••"
+            placeholder="********"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 mb-4 rounded-full border border-white/60 bg-transparent text-black placeholder-gray-500 caret-black focus:outline-none focus:ring-2 focus:ring-white focus:border-white"
+            className="w-full p-3 mb-4 rounded-full border border-white/60 bg-transparent text-black placeholder-white caret-white focus:outline-none focus:ring-2 focus:ring-white focus:border-white"
           />
 
           <div className="mb-4 text-right">
-            <a href="/forgot" className="text-sm text-white/90 hover:underline">Forgot Password?</a>
+            <a href="/forgot" className="text-sm text-blue-200 hover:underline">Forgot Password?</a>
           </div>
 
           <button
             type="submit"
-            className="w-full bg-indigo-500 text-white py-2.5 rounded-md hover:bg-indigo-600 transition"
+            className="w-full bg-indigo-500 text-white py-2.5 rounded-md hover:bg-green-600 transition"
           >
             Sign in
           </button>
@@ -310,7 +310,7 @@ function Slider() {
 
       {/* Controls */}
       <div className="mt-6 flex items-center justify-between">
-        <button onClick={() => go(index - 1)} className="px-3 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50">Prev</button>
+        <button onClick={() => go(index - 1)} className="px-3 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50">👈</button>
         <div className="flex gap-2">
           {slides.map((_, i) => (
             <button
@@ -321,7 +321,7 @@ function Slider() {
             />
           ))}
         </div>
-        <button onClick={() => go(index + 1)} className="px-3 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50">Next</button>
+        <button onClick={() => go(index + 1)} className="px-3 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50">👉</button>
       </div>
     </div>
   );

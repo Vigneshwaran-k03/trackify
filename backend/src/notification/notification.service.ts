@@ -22,7 +22,7 @@ export class NotificationService {
       const payload: any = { text };
       if (blocks) payload.blocks = blocks;
 
-      // Use global fetch if available (Node 18+)
+      // Use global fetch
       const res = await fetch(this.webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

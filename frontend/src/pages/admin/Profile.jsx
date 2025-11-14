@@ -47,7 +47,10 @@ export default function AdminProfile() {
       setUserDept(profile.dept || profile.department || profile.dept_name || '');
       setUserEmail(profile.email || profile.mail || '');
       if (profile.avatar) setAvatar(profile.avatar);
-    } catch (_) {}
+    } catch (err) {
+      console.error('Error fetching user profile:', err);
+      alert(`Error: ${err.message || 'Failed to fetch user profile. Please try again.'}`);
+    }
   };
 
   const resolveAvatar = (val) => {
@@ -65,9 +68,27 @@ export default function AdminProfile() {
     if (pendingFile) setPendingFile(null);
   };
 
-  const onUpload = (e) => {
-    const file = e.target.files?.[0];
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
     if (!file) return;
+    
+    // Check file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Please upload an image file (JPEG, PNG, GIF, or WebP)');
+      e.target.value = '';
+      return;
+    }
+    
+    // Check file size (10MB limit to match backend)
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    if (file.size > maxSize) {
+      alert('File size should not exceed 10MB');
+      e.target.value = ''; // Clear the file input
+      return;
+    }
+    
+    // Create object URL for preview
     const url = URL.createObjectURL(file);
     setPendingFile(file);
     setPendingAvatar(url);
@@ -78,6 +99,19 @@ export default function AdminProfile() {
       if (!pendingAvatar) return;
       const token = getToken();
       if (!token) { window.location.href = '/login'; return; }
+      
+      // Show loading state
+      const saveButton = document.querySelector('button[type="button"]:has(svg.animate-spin)')?.closest('button');
+      if (saveButton) {
+        saveButton.disabled = true;
+        saveButton.querySelector('span').textContent = 'Saving...';
+      }
+      
+      // Double check file size before upload (in case of direct API calls)
+      if (pendingFile && pendingFile.size > 5 * 1024 * 1024) {
+        alert('File size should not exceed 5MB');
+        return;
+      }
       if (pendingFile) {
         const fd = new FormData();
         fd.append('file', pendingFile);
@@ -86,11 +120,19 @@ export default function AdminProfile() {
           headers: { Authorization: `Bearer ${token}` },
           body: fd
         });
+        
+        if (!res.ok) {
+          const error = await res.json().catch(() => ({}));
+          throw new Error(error.message || 'Failed to upload avatar');
+        }
+        
         const data = await res.json();
-        if (res.ok && data?.avatar) {
+        if (data?.avatar) {
           setAvatar(data.avatar);
           setPendingAvatar('');
           setPendingFile(null);
+          // Show success message
+          alert('Avatar updated successfully!');
         }
         return;
       }
@@ -165,7 +207,7 @@ export default function AdminProfile() {
                   </div>
                   <div>
                     <label className="text-sm font-medium mb-1 block text-white/90">Upload from device</label>
-                    <input ref={fileRef} type="file" accept="image/*" onChange={onUpload} className="hidden" />
+                    <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
                     <button
                       type="button"
                       onClick={()=>fileRef.current?.click()}

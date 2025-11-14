@@ -145,7 +145,7 @@ export default function Layout() {
       {/* Sidebar */}
       {/* Mobile overlay */}
       {isMobile && showSidebar && (
-        <div className="fixed inset-0 bg-black/40 z-40" onClick={() => setShowSidebar(false)} />
+        <div className="fixed inset-0 bg-black/40 z-40" onClick={() => setShowSidebar(true)} />
       )}
       {(() => {
         const base = 'w-64 shrink-0 bg-gradient-to-t from-orange-300 via-rose-100 to-amber-100 text-gray-800 flex flex-col';
