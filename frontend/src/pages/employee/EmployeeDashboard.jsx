@@ -790,65 +790,14 @@ export default function EmployeeDashboard() {
 
   const FilterModal = ({ title, filter, setFilter, onClose, allowAllKinds }) => (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
-      {/* Updated Modal Card Style */}
-      <div className="bg-white/20 backdrop-blur-md text-white w-full max-w-lg rounded-lg shadow-xl p-6 max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
+      <div className="bg-white/20 backdrop-blur-md text-white w-full max-w-md rounded-lg shadow-xl p-6">
+        <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-semibold text-white">{title}</h3>
-          <button onClick={onClose} className="text-gray-100 hover:text-white text-2xl">✕</button>
-        </div>
-
-        {/* Employee Trend Analysis (darker frosted card) */}
-        <div className="bg-black/20 backdrop-blur-md rounded-lg p-4 md:p-5 shadow relative overflow-hidden mb-6">
-          <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(1000px 400px at 20% -10%, rgba(0,255,255,0.10), transparent), radial-gradient(800px 300px at 120% 20%, rgba(0,128,255,0.12), transparent), radial-gradient(1000px 500px at 50% 120%, rgba(0,255,128,0.08), transparent)' }} />
-          <div className="relative flex items-center justify-between mb-3">
-            <div>
-              <div className="text-sm text-cyan-200">Trend Analysis</div>
-              <div className="text-white text-lg font-semibold">My Performance — {perfFilter.year}</div>
-            </div>
-            <div className={`text-sm font-semibold ${empTrendDelta >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-              {empTrendDelta >= 0 ? '▲' : '▼'} {Math.abs(empTrendDelta)}
-            </div>
-          </div>
-          <div className="relative h-56 md:h-64">
-            {empTrend.labels.length ? (
-              <Line
-                data={{
-                  labels: empTrend.labels,
-                  datasets: [{
-                    label: 'Avg %',
-                    data: empTrend.values,
-                    fill: true,
-                    borderWidth: 2,
-                    pointRadius: 3,
-                    pointHoverRadius: 5,
-                    tension: 0.35,
-                    segment: {
-                      borderColor: ctx => {
-                        const a = ctx?.p0?.parsed?.y; const b = ctx?.p1?.parsed?.y; if (typeof a !== 'number' || typeof b !== 'number') return '#60a5fa';
-                        return b >= a ? '#22c55e' : '#ef4444';
-                      },
-                      backgroundColor: ctx => {
-                        const a = ctx?.p0?.parsed?.y; const b = ctx?.p1?.parsed?.y; const base = b >= a ? 'rgba(34,197,94,0.18)' : 'rgba(239,68,68,0.14)';
-                        return base;
-                      }
-                    },
-                  }]
-                }}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: { legend: { display: false }, tooltip: { intersect: false, mode: 'index' } },
-                  scales: {
-                    x: { grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { color: '#cbd5e1' } },
-                    y: { suggestedMin: 0, suggestedMax: 100, grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { color: '#cbd5e1' } }
-                  },
-                  animation: { duration: 900, easing: 'easeOutQuart' }
-                }}
-              />
-            ) : (
-              <div className="text-gray-300">No data.</div>
-            )}
-          </div>
+          <button onClick={onClose} className="text-white/70 hover:text-white">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

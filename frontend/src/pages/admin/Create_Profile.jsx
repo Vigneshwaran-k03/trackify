@@ -107,7 +107,7 @@ export default function Create_Profile() {
         Added `px-4` for horizontal padding on all screen sizes
         Added `py-8` for vertical padding to give some breathing room
       */}
-      <div className="w-full sm:max-w-md bg-black/30 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 p-6 sm:p-8 my-auto px-4 py-8">
+      <div className="w-full max-w-md mx-auto bg-white/10 backdrop-blur-md p-8 rounded-lg shadow-xl border border-white/20">
         
         <h2 className="text-2xl text-white font-bold mb-6 text-center">Create User</h2>
         

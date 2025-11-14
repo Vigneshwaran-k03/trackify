@@ -1294,12 +1294,23 @@ export default function AdminDashboard() {
       <div id="kras-section" className="bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-6 border border-white/20 text-white mb-8">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-semibold text-white">KRA Management</h3>
-          <div className="relative">
-            <button className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500 disabled:opacity-50" onClick={(e)=>{ const m=e.currentTarget.nextSibling; if (m) m.classList.toggle('hidden'); }}>Export</button>
-            <div className="absolute right-0 mt-1 bg-white border rounded shadow hidden z-10">
-              <button className="block w-full text-left px-3 py-2 hover:bg-gray-50 text-black" onClick={()=>handleExportReport('csv')}>CSV</button>
-              <button className="block w-full text-left px-3 py-2 hover:bg-gray-50 text-black" onClick={()=>handleExportReport('excel')}>Excel</button>
-              <button className="block w-full text-left px-3 py-2 hover:bg-gray-50 text-black" onClick={()=>handleExportReport('pdf')}>PDF</button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleCreateKRA}
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 whitespace-nowrap"
+            >
+              New KRA
+            </button>
+            <div className="relative">
+              <button className="px-4 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500 hover:from-blue-700 hover:to-blue-600 whitespace-nowrap" 
+                onClick={(e)=>{ const m=e.currentTarget.nextSibling; if (m) m.classList.toggle('hidden'); }}>
+                Export
+              </button>
+              <div className="absolute right-0 mt-1 bg-white border rounded shadow hidden z-10 w-32">
+                <button className="block w-full text-left px-3 py-2 hover:bg-gray-50 text-black" onClick={()=>handleExportReport('csv')}>CSV</button>
+                <button className="block w-full text-left px-3 py-2 hover:bg-gray-50 text-black" onClick={()=>handleExportReport('excel')}>Excel</button>
+                <button className="block w-full text-left px-3 py-2 hover:bg-gray-50 text-black" onClick={()=>handleExportReport('pdf')}>PDF</button>
+              </div>
             </div>
           </div>
         </div>
@@ -1325,26 +1336,7 @@ export default function AdminDashboard() {
               {(kraEmployees||[]).map(e=> <option key={e.name} value={e.name} className="text-black">{e.name}</option>)}
             </select>
           </div>
-          <div className="flex items-end">
-            <button
-              onClick={handleCreateKRA}
-              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 w-full"
-            >
-              Create New KRA
-            </button>
-          </div>
-          <div className="flex items-end">
-            <div className="relative w-full">
-              <button type="button" onClick={()=> setExportOpen(prev=>!prev)} className="w-full px-4 py-2 rounded border border-white/30 bg-white/5 text-white hover:bg-white/10">Export</button>
-              {exportOpen && (
-                <div className="absolute right-0 mt-1 w-40 bg-white border rounded shadow z-10">
-                  <button className="block w-full text-left px-3 py-2 hover:bg-gray-50 text-black" onClick={()=>{ handleExportReport('pdf'); setExportOpen(false); }}>PDF</button>
-                  <button className="block w-full text-left px-3 py-2 hover:bg-gray-50 text-black" onClick={()=>{ handleExportReport('excel'); setExportOpen(false); }}>Excel</button>
-                  <button className="block w-full text-left px-3 py-2 hover:bg-gray-50 text-black" onClick={()=>{ handleExportReport('csv'); setExportOpen(false); }}>CSV</button>
-                </div>
-              )}
-            </div>
-          </div>
+
         </div>
 
         {kraDept && (() => {

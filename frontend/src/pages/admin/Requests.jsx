@@ -94,13 +94,13 @@ export default function AdminRequests() {
           </div>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
             <button
-              className={`px-3 py-2 rounded border border-white/50 text-white/90 transition-colors ${tab==='requests' ? 'bg-white/90 text-indigo-700 font-semibold border-white' : 'hover:bg-white/20'}`}
+              className={`px-3 py-2 rounded border border-white/50 text-white/90 transition-colors ${tab==='requests' ? 'bg-blue-600 text-white font-semibold border-blue-700' : 'hover:bg-white/20'}`}
               onClick={()=>{setTab('requests'); setStatus('Pending')}}
             >
               Requests
             </button>
             <button
-              className={`px-3 py-2 rounded border border-white/50 text-white/90 transition-colors ${tab==='approvals' ? 'bg-white/90 text-indigo-700 font-semibold border-white' : 'hover:bg-white/20'}`}
+              className={`px-3 py-2 rounded border border-white/50 text-white/90 transition-colors ${tab==='approvals' ? 'bg-blue-600 text-white font-semibold border-blue-700' : 'hover:bg-white/20'}`}
               onClick={()=>{setTab('approvals'); setStatus('Approved')}}
             >
               Approvals

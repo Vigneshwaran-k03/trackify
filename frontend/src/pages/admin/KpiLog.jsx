@@ -167,7 +167,7 @@ export default function AdminKpiLog() {
       <div className="p-4 sm:p-6">
         
         {/* Filter Bar Card */}
-        <div className="bg-black/20 backdrop-blur-md rounded-lg shadow-xl border border-white/20 p-4 mb-4">
+        <div className="bg-white/20 backdrop-blur-md rounded-lg shadow-xl border border-white/20 p-4 mb-4">
           <div className="flex flex-col md:flex-row items-center justify-between mb-4 gap-4">
             <h1 className="text-2xl font-semibold text-white">KPI Log</h1>
             <div className="flex flex-wrap items-center justify-center gap-2">

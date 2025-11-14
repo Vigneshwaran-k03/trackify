@@ -157,21 +157,35 @@ export default function Create_KPI_Employee() {
         )}
         
         <div className="mt-2">
-          <h3 className="text-xl font-semibold mb-2 text-white">My Created KPIs</h3>
-          <div className="mb-3 flex items-center gap-4">
-            <label className="text-sm mr-2 text-gray-100">Filter:</label>
-            <select className="border border-white/30 rounded px-2 py-1 bg-white/80 text-black" value={statusFilter} onChange={(e)=>setStatusFilter(e.target.value)}>
-              <option value="Active">Active</option>
-              <option value="End">End</option>
-              <option value="All">All</option>
-            </select>
-            <label className="text-sm text-gray-100">KRA:</label>
-            <select className="border border-white/30 rounded px-2 py-1 bg-white/80 text-black" value={kraFilter} onChange={(e)=>setKraFilter(e.target.value)}>
-              <option value="">All</option>
-              {[...new Map(myKpis.map(k=>[k.kra_id, k.kra_name]))].map(([id, name]) => (
-                <option key={id} value={id}>{name}</option>
-              ))}
-            </select>
+          <h3 className="text-xl font-semibold mb-3 text-white">My Created KPIs</h3>
+          <div className="mb-4">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3 items-start sm:items-center">
+              <div className="flex items-center gap-2">
+                <label className="text-sm whitespace-nowrap text-gray-100">Status:</label>
+                <select 
+                  className="border border-white/30 rounded px-2 py-1 bg-white/80 text-black min-w-[120px]" 
+                  value={statusFilter} 
+                  onChange={(e)=>setStatusFilter(e.target.value)}
+                >
+                  <option value="Active">Active</option>
+                  <option value="End">End</option>
+                  <option value="All">All</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <label className="text-sm whitespace-nowrap text-gray-100">Filter by KRA:</label>
+                <select 
+                  className="border border-white/30 rounded px-2 py-1 bg-white/80 text-black flex-1 min-w-[150px]" 
+                  value={kraFilter} 
+                  onChange={(e)=>setKraFilter(e.target.value)}
+                >
+                  <option value="">All KRAs</option>
+                  {[...new Map(myKpis.map(k=>[k.kra_id, k.kra_name]))].map(([id, name]) => (
+                    <option key={id} value={id}>{name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
           
           {!myKpis.length && <div className="text-sm text-gray-200">No KPIs created yet.</div>}

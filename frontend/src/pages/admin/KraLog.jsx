@@ -160,13 +160,13 @@ export default function AdminKraLog() {
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-2">
               <button
-                className={`px-3 py-1 rounded border border-white/50 text-white/90 transition-colors ${tab==='mine' ? 'bg-white/90 text-indigo-700 font-semibold border-white' : 'hover:bg-white/20'}`}
+                className={`px-3 py-1 rounded border border-white/50 text-white/90 transition-colors ${tab==='mine' ? 'bg-blue-600 text-white font-semibold border-blue-700' : 'hover:bg-white/20'}`}
                 onClick={()=> { setTab('mine'); setManager(''); setEmployee(''); }}
               >
                 My Changes
               </button>
               <button
-                className={`px-3 py-1 rounded border border-white/50 text-white/90 transition-colors ${tab==='manager' ? 'bg-white/90 text-indigo-700 font-semibold border-white' : 'hover:bg-white/20'}`}
+                className={`px-3 py-1 rounded border border-white/50 text-white/90 transition-colors ${tab==='manager' ? 'bg-blue-600 text-white font-semibold border-blue-700' : 'hover:bg-white/20'}`}
                 onClick={()=> { setTab('manager'); }}
               >
                 Manager Changes

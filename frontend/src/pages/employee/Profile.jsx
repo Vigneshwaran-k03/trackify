@@ -244,9 +244,13 @@ export default function EmployeeProfile() {
           </div>
           <div>
             <h4 className="font-medium mb-3 text-gray-100">Profile Picture</h4>
-            <div className="flex items-start gap-4">
-              <img src={pendingFile ? pendingAvatar : resolveAvatar(pendingAvatar || avatar)} alt="passport" className="w-[160px] h-[200px] object-cover border border-white/30 rounded" />
-              <div className="flex-1 space-y-2">
+            <div className="flex flex-col lg:flex-row items-start gap-4">
+              <img 
+                src={pendingFile ? pendingAvatar : resolveAvatar(pendingAvatar || avatar)} 
+                alt="passport" 
+                className="w-[160px] h-[200px] object-cover border-2 border-white/50 rounded-md shadow-md self-center lg:self-start" 
+              />
+              <div className="flex-1 space-y-3 w-full">
                 <div className="grid grid-cols-5 gap-3">
                   {['male1','male2','male3','male4','male5','female1','female2','female3','female4','female5'].map(key=> (
                     <button type="button" key={key} onClick={()=>selectDefault(key)} className={`border border-white/30 rounded overflow-hidden focus:outline-none ${(pendingAvatar===`default:${key}`) || (!pendingAvatar && avatar===`default:${key}`) ? 'ring-2 ring-indigo-400' : ''}`}>

@@ -98,30 +98,32 @@ export default function ManagerRequests() {
             <option value="kra">KRA</option>
           </select>
         </div>
-        <div className="flex items-center gap-3 mb-4">
-          <button 
-            className={`px-3 py-2 rounded border ${tab==='my'?'bg-indigo-600 text-white border-indigo-600':'border-white/30 text-white hover:bg-white/10'}`} 
-            onClick={()=>{setTab('my'); setStatus(reqType==='kra'?'': '');}}
-          >
-            My Requests
-          </button>
-          {reqType === 'kpi' && (
-            <>
-              <button 
-                className={`px-3 py-2 rounded border ${tab==='inbox'?'bg-indigo-600 text-white border-indigo-600':'border-white/30 text-white hover:bg-white/10'}`} 
-                onClick={()=>{setTab('inbox'); setStatus('Pending')}}
-              >
-                Requests
-              </button>
-              <button 
-                className={`px-3 py-2 rounded border ${tab==='approvals'?'bg-indigo-600 text-white border-indigo-600':'border-white/30 text-white hover:bg-white/10'}`} 
-                onClick={()=>{setTab('approvals'); setStatus('Approved')}}
-              >
-                Approvals
-              </button>
-            </>
-          )}
-          <div className="ml-auto flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row flex-wrap gap-2 mb-4">
+          <div className="flex flex-wrap gap-2">
+            <button 
+              className={`px-3 py-2 rounded border whitespace-nowrap ${tab==='my'?'bg-indigo-600 text-white border-indigo-600':'border-white/30 text-white hover:bg-white/10'}`} 
+              onClick={()=>{setTab('my'); setStatus(reqType==='kra'?'': '');}}
+            >
+              My Requests
+            </button>
+            {reqType === 'kpi' && (
+              <>
+                <button 
+                  className={`px-3 py-2 rounded border whitespace-nowrap ${tab==='inbox'?'bg-indigo-600 text-white border-indigo-600':'border-white/30 text-white hover:bg-white/10'}`} 
+                  onClick={()=>{setTab('inbox'); setStatus('Pending')}}
+                >
+                  Requests
+                </button>
+                <button 
+                  className={`px-3 py-2 rounded border whitespace-nowrap ${tab==='approvals'?'bg-indigo-600 text-white border-indigo-600':'border-white/30 text-white hover:bg-white/10'}`} 
+                  onClick={()=>{setTab('approvals'); setStatus('Approved')}}
+                >
+                  Approvals
+                </button>
+              </>
+            )}
+          </div>
+          <div className="flex-1 min-w-[200px] flex items-center gap-2 justify-end">
             {reqType === 'kpi' ? (
               <select className="border border-white/30 rounded px-2 py-1 bg-white/80 text-black" value={status} onChange={(e)=>setStatus(e.target.value)}>
                 {tab==='inbox' ? (
