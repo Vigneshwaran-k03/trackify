@@ -24,7 +24,7 @@ async function bootstrap() {
 
   // Ensure upload directories exist
   const uploadsDir = path.join(process.cwd(), 'backend', 'uploads');
-  const avatarsDir = path.join(uploadsDir, 'avatars');
+  const avatarsDir= path.join(uploadsDir, 'avatars');
   
   // Create directories if they don't exist
   if (!require('fs').existsSync(uploadsDir)) {

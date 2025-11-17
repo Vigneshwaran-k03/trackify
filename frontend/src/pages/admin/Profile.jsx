@@ -131,8 +131,6 @@ export default function AdminProfile() {
           setAvatar(data.avatar);
           setPendingAvatar('');
           setPendingFile(null);
-          // Show success message
-          alert('Avatar updated successfully!');
         }
         return;
       }

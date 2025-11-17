@@ -157,14 +157,28 @@ export default function EmployeeDashboard() {
       const token = getToken();
       const first = (kraModalKpis && kraModalKpis[0]) || null;
       const kraId = first?.kra_id || selectedKraId || '';
-      let kraName = (first?.kra_name) || kraModalName || '';
-      // Avoid calling /kra/:id (may be forbidden for employees). Try to derive managerName from modal context if available.
-      let managerName = first?.manager_name || '';
+
+      // Derive KRA meta (name, manager/creator) from allKras which comes from /kpi/available
+      const kraMeta = (allKras || []).find(k => String(k.kra_id) === String(kraId));
+
+      let kraName = (first?.kra_name) || kraModalName || kraMeta?.name || '';
+
+      // IMPORTANT (EMPLOYEE FLOW):
+      // 1) Prefer kra.manager_name
+      // 2) If missing, fall back to kra.created_by (manager/admin who owns this KRA)
+      // 3) Finally, fall back to any manager_name present on scoring item
+      let managerName =
+        kraMeta?.manager_name ||
+        kraMeta?.created_by ||
+        first?.manager_name ||
+        '';
+
       await axios.post('http://localhost:3000/notification/submit', {
         actorRole: 'Employee',
         actorName: userName,
         targetRole: 'Manager',
-        targetName: managerName,
+        // When we resolve a name, notif will go only to that manager; null means broadcast.
+        targetName: managerName || null,
         context: { kra: kraName, dept: userDept || '' },
       }, { headers: { Authorization: `Bearer ${token}` } });
       setSubmitToast(true);

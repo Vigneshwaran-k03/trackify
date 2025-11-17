@@ -13,26 +13,29 @@ export class NotificationService {
     private readonly repo: Repository<NotificationEntity>,
   ) {}
 
+  /** Send Slack Notification */
   async sendSlack(text: string, blocks?: any): Promise<{ ok: boolean }> {
     try {
       if (!this.webhookUrl) {
         this.logger.warn('SLACK_WEBHOOK_URL not set; skipping Slack notification.');
         return { ok: false };
       }
+
       const payload: any = { text };
       if (blocks) payload.blocks = blocks;
 
-      // Use global fetch
       const res = await fetch(this.webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       } as any);
+
       if (!res.ok) {
         const t = await res.text();
         this.logger.error(`Slack webhook failed: ${res.status} ${t}`);
         return { ok: false };
       }
+
       return { ok: true };
     } catch (e: any) {
       this.logger.error('Error sending Slack notification', e?.stack || e?.message || e);
@@ -40,6 +43,7 @@ export class NotificationService {
     }
   }
 
+  /** Create Notification */
   async createNotification(params: {
     type: string;
     title: string;
@@ -56,29 +60,47 @@ export class NotificationService {
       targetName: params.targetName ?? null,
       meta: params.meta ?? null,
     });
+
     return this.repo.save(entity);
   }
 
-  async getFeed(targetRole: string, targetName?: string | null, limit = 20): Promise<NotificationEntity[]> {
+  /** Get Notifications for Specific Target */
+  async getFeed(
+    targetRole: string,
+    targetName?: string | null,
+    limit = 20,
+  ): Promise<NotificationEntity[]> {
     const qb = this.repo.createQueryBuilder('n')
       .where('n.targetRole = :role', { role: targetRole })
       .orderBy('n.created_at', 'DESC')
       .limit(limit);
+
+    // FIXED: Only return exact match notifications if a targetName is provided
     if (targetName) {
-      qb.andWhere('(n.targetName = :name OR n.targetName IS NULL)', { name: targetName });
+      qb.andWhere('n.targetName = :name', { name: targetName });
     }
+
+    // If targetName is null → all managers get it (broadcast)
     return qb.getMany();
   }
 
-  async deleteForTarget(id: number, targetRole: string, targetName?: string | null): Promise<{ affected: number }> {
+  /** Delete Notification for Specific Target */
+  async deleteForTarget(
+    id: number,
+    targetRole: string,
+    targetName?: string | null,
+  ): Promise<{ affected: number }> {
     const qb = this.repo.createQueryBuilder()
       .delete()
       .from(NotificationEntity)
       .where('id = :id', { id })
       .andWhere('targetRole = :role', { role: targetRole });
+
+    // FIXED: remove OR null condition
     if (targetName) {
-      qb.andWhere('(targetName = :name OR targetName IS NULL)', { name: targetName });
+      qb.andWhere('targetName = :name', { name: targetName });
     }
+
     const res = await qb.execute();
     return { affected: res.affected || 0 };
   }

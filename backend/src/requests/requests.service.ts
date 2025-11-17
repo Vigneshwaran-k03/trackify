@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, ForbiddenException, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { KpiChangeRequest } from './kpi-change-request.entity';
@@ -24,6 +24,8 @@ type CreateReqDTO = {
 
 @Injectable()
 export class RequestsService {
+  private readonly logger = new Logger(RequestsService.name);
+
   constructor(
     @InjectRepository(KpiChangeRequest)
     private readonly reqRepo: Repository<KpiChangeRequest>,
@@ -93,17 +95,19 @@ export class RequestsService {
 
     const saved = await this.kraReqRepo.save(entity);
 
-    // Notify admin audience
+    // Notify admin audience (Admin broadcast is intentional; keep null)
     try {
       await this.notify.createNotification({
         type: 'kra_change_request',
         title: `KRA change request #${saved.id} for ${kra.name}`,
         message: dto.request_comment || null,
         targetRole: 'Admin',
-        targetName: null,
+        targetName: null, // broadcast to all admins
         meta: { requestId: saved.id, kra_id: kra.kra_id },
       });
-    } catch (_) {}
+    } catch (e) {
+      this.logger.warn('Failed to create KRA change notification', e?.message || e);
+    }
 
     return saved;
   }
@@ -326,18 +330,35 @@ export class RequestsService {
     // Notify approver
     try {
       const title = `KPI change request #${saved.id} for ${kpi.name}`;
+
+      // ---- SAFETY: decide exact targetName to store in DB ----
+      // If approverRole is Manager, prefer explicit approverName, then kra.manager_name as fallback.
+      // If still missing, it will be a broadcast to all managers — log so we can see if it's accidental.
+      let notifTargetName: string | null = null;
+      if (approverRoleStrict === 'Manager') {
+        notifTargetName = approverName || kra.manager_name || null;
+        if (!notifTargetName) {
+          this.logger.warn(`No manager name resolved for KPI request ${saved.id} (kra_id=${kra.kra_id}). Notification will be broadcast to all managers.`);
+        }
+      } else {
+        // Admin target (approverNameOverride used only when provided)
+        notifTargetName = approverNameOverride ?? null;
+      }
+
       await this.notify.createNotification({
         type: 'kpi_change_request',
         title,
         message: dto.request_comment || null,
-        targetRole: approverRole,
-        targetName: approverName || null,
+        targetRole: approverRoleStrict,
+        targetName: notifTargetName,
         meta: { requestId: saved.id, kpi_id: kpi.id, kra_id: kra.kra_id, action },
       });
+
       // Attempt email (best-effort)
       let to = '';
-      if (approverRole === 'Manager' && kra.manager_name) {
-        const mgr = await this.users.findByName(kra.manager_name);
+      if (approverRole === 'Manager' && (kra.manager_name || notifTargetName)) {
+        const mgrName = notifTargetName || kra.manager_name;
+        const mgr = await this.users.findByName(mgrName);
         to = mgr?.email || '';
       } else if (approverRole === 'Admin') {
         // send to any admin? We don't have list; skip email if unknown
@@ -349,7 +370,9 @@ export class RequestsService {
           text: `A KPI change request was created by ${u.name} for KPI ${kpi.name}. Request ID: ${saved.id}.`,
         });
       }
-    } catch (_) {}
+    } catch (e) {
+      this.logger.warn('Failed to create KPI change notification/email', e?.message || e);
+    }
 
     return saved;
   }
