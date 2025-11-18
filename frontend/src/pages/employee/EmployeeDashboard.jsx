@@ -938,7 +938,7 @@ export default function EmployeeDashboard() {
           </div>
         </div>
         {/* Employee Trend Analysis (first in overview) */}
-        <div className="bg-black/20 backdrop-blur-md rounded-lg p-4 md:p-5 shadow relative overflow-hidden mb-6">
+        <div id="employee-trend-analysis" className="bg-white/10 backdrop-blur-md rounded-lg p-4 md:p-5 shadow relative overflow-hidden mb-6">
           <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(1000px 400px at 20% -10%, rgba(0,255,255,0.10), transparent), radial-gradient(800px 300px at 120% 20%, rgba(0,128,255,0.12), transparent), radial-gradient(1000px 500px at 50% 120%, rgba(0,255,128,0.08), transparent)' }} />
           <div className="relative flex items-center justify-between mb-3">
             <div>
@@ -948,6 +948,19 @@ export default function EmployeeDashboard() {
             <div className="flex items-center gap-2">
               <input type="number" className="p-1.5 rounded bg-white/10 text-white w-24 border border-white/30" value={empTrendYear} onChange={(e)=>setEmpTrendYear(Number(e.target.value)||new Date().getFullYear())} />
               <div className={`text-sm font-semibold ${empTrendDelta >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{empTrendDelta >= 0 ? '▲' : '▼'} {Math.abs(empTrendDelta)}</div>
+              <div className="relative">
+                <button
+                  className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500 disabled:opacity-50"
+                  onClick={(e)=>{ const m=e.currentTarget.nextSibling; if (m) m.classList.toggle('hidden'); }}
+                >
+                  Export
+                </button>
+                <div className="absolute right-0 mt-1 bg-white border rounded shadow hidden z-10 text-black text-xs">
+                  <button className="block w-full text-left px-3 py-1 hover:bg-gray-50" onClick={()=>exportSectionById('employee-trend-analysis','employee-trend-analysis','pdf')}>PDF</button>
+                  <button className="block w-full text-left px-3 py-1 hover:bg-gray-50" onClick={()=>exportSectionById('employee-trend-analysis','employee-trend-analysis','png')}>PNG</button>
+                  <button className="block w-full text-left px-3 py-1 hover:bg-gray-50" onClick={()=>exportSectionById('employee-trend-analysis','employee-trend-analysis','jpg')}>JPG</button>
+                </div>
+              </div>
             </div>
           </div>
           <div className="relative h-56 md:h-64">

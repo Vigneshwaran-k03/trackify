@@ -62,6 +62,10 @@ export default function ManagerDashboard() {
   const [myReviews, setMyReviews] = useState([]);
   const [revEditOpen, setRevEditOpen] = useState(false);
   const [revEditForm, setRevEditForm] = useState({ id: 0, score: '', comment: '', review_at: '' });
+  const [revMode, setRevMode] = useState('percentage');
+  const [revRatingBand, setRevRatingBand] = useState('');
+  const [revRatingModalOpen, setRevRatingModalOpen] = useState(false);
+  const [revRatingValue, setRevRatingValue] = useState('');
   // Reviews received (manager performance)
   const [perfFilter, setPerfFilter] = useState({ year: new Date().getFullYear(), month: new Date().getMonth()+1 });
   const [perfReviews, setPerfReviews] = useState([]);
@@ -612,7 +616,7 @@ export default function ManagerDashboard() {
   const submitEditReview = async () => {
     try {
       await axios.post(`http://localhost:3000/review/${revEditForm.id}`, {
-        score: revEditForm.score === '' ? undefined : Number(revEditForm.score),
+        score: undefined,
         comment: revEditForm.comment || undefined,
         review_at: revEditForm.review_at || undefined,
       }, { headers: { Authorization: `Bearer ${getToken()}` } });
@@ -915,7 +919,7 @@ export default function ManagerDashboard() {
           </div>
         </div>
         {/* Manager Trend Analysis (first in overview) */}
-        <div className="bg-white/10 backdrop-blur-md rounded-lg p-4 md:p-5 shadow-lg border border-white/20 relative overflow-hidden mb-6">
+        <div id="manager-trend-analysis" className="bg-white/10 backdrop-blur-md rounded-lg p-4 md:p-5 shadow-lg border border-white/20 relative overflow-hidden mb-6">
           <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(1000px 400px at 20% -10%, rgba(0,255,255,0.10), transparent), radial-gradient(800px 300px at 120% 20%, rgba(0,128,255,0.12), transparent), radial-gradient(1000px 500px at 50% 120%, rgba(0,255,128,0.08), transparent)' }} />
           <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3">
             <div>
@@ -925,6 +929,19 @@ export default function ManagerDashboard() {
             <div className="flex items-center gap-3 mt-2 sm:mt-0">
               <input type="number" className="p-1.5 rounded bg-white/10 text-white w-24 border border-white/30 focus:ring-2 focus:ring-cyan-400 focus:outline-none" value={trendYear} onChange={(e)=>setTrendYear(Number(e.target.value)||new Date().getFullYear())} />
               <div className={`text-sm font-semibold ${mgrTrendDelta >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{mgrTrendDelta >= 0 ? '▲' : '▼'} {Math.abs(mgrTrendDelta)}</div>
+              <div className="relative">
+                <button
+                  className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500 disabled:opacity-50"
+                  onClick={(e)=>{ const m=e.currentTarget.nextSibling; if (m) m.classList.toggle('hidden'); }}
+                >
+                  Export
+                </button>
+                <div className="absolute right-0 mt-1 bg-white border rounded shadow hidden z-10 text-black text-xs">
+                  <button className="block w-full text-left px-3 py-1 hover:bg-gray-50" onClick={()=>exportSectionById('manager-trend-analysis','manager-trend-analysis','pdf')}>PDF</button>
+                  <button className="block w-full text-left px-3 py-1 hover:bg-gray-50" onClick={()=>exportSectionById('manager-trend-analysis','manager-trend-analysis','png')}>PNG</button>
+                  <button className="block w-full text-left px-3 py-1 hover:bg-gray-50" onClick={()=>exportSectionById('manager-trend-analysis','manager-trend-analysis','jpg')}>JPG</button>
+                </div>
+              </div>
             </div>
           </div>
           <div className="relative h-56 md:h-64">
@@ -973,7 +990,7 @@ export default function ManagerDashboard() {
         </div>
 
         {/* Manager KRA Performance (Reviews) */}
-        <div className="bg-white/20 backdrop-blur-sm border border-white/30 p-4 rounded-lg shadow-lg mb-6">
+        <div id="manager-kra-performance" className="bg-white/20 backdrop-blur-sm border border-white/30 p-4 rounded-lg shadow-lg mb-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3">
             <h4 className="font-medium text-white mb-2 sm:mb-0">Manager KRA Performance (Reviews)</h4>
             <div className="flex items-center gap-2">
@@ -981,6 +998,19 @@ export default function ManagerDashboard() {
               <select className="p-2 border border-white/50 rounded bg-white/30 text-gray-900" value={perfFilter.month} onChange={(e)=>setPerfFilter(prev=>({ ...prev, month: Number(e.target.value) }))}>
                 {Array.from({length:12},(_,i)=>i+1).map(m=> <option key={m} value={m}>{m}</option>)}
               </select>
+              <div className="relative">
+                <button
+                  className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500 disabled:opacity-50"
+                  onClick={(e)=>{ const m=e.currentTarget.nextSibling; if (m) m.classList.toggle('hidden'); }}
+                >
+                  Export
+                </button>
+                <div className="absolute right-0 mt-1 bg-white border rounded shadow hidden z-10 text-black text-xs">
+                  <button className="block w-full text-left px-3 py-1 hover:bg-gray-50" onClick={()=>exportSectionById('manager-kra-performance','manager-kra-performance','pdf')}>PDF</button>
+                  <button className="block w-full text-left px-3 py-1 hover:bg-gray-50" onClick={()=>exportSectionById('manager-kra-performance','manager-kra-performance','png')}>PNG</button>
+                  <button className="block w-full text-left px-3 py-1 hover:bg-gray-50" onClick={()=>exportSectionById('manager-kra-performance','manager-kra-performance','jpg')}>JPG</button>
+                </div>
+              </div>
             </div>
           </div>
           {perfKraSeries.labels.length ? (
@@ -1545,12 +1575,75 @@ export default function ManagerDashboard() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1 text-white/90">Score (Percentage)</label>
-            <div className="flex items-center gap-2">
-              <input type="range" className="flex-1" min="0" max="100" value={revScore===''?0:Number(revScore)} onChange={(e)=>setRevScore(e.target.value)} />
-              <span className="w-12 text-right text-sm text-white/90">{revScore||0}%</span>
-            </div>
+            <label className="block text-sm font-medium mb-1 text-white/90">Method</label>
+            <select
+              className="w-full p-2 border border-white/50 rounded bg-white/30 text-gray-900"
+              value={revMode}
+              onChange={(e)=>{
+                const mode = e.target.value;
+                setRevMode(mode);
+                setRevScore('');
+                setRevRatingBand('');
+                setRevRatingValue('');
+              }}
+            >
+              <option value="percentage">Percentage</option>
+              <option value="rating">Rating</option>
+            </select>
           </div>
+          {revMode === 'percentage' && (
+            <div>
+              <label className="block text-sm font-medium mb-1 text-white/90">Score (Percentage)</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="range"
+                  className="flex-1"
+                  min="0"
+                  max="100"
+                  value={revScore === '' ? 0 : Number(revScore)}
+                  onChange={(e)=>setRevScore(e.target.value)}
+                />
+                <span className="w-12 text-right text-sm text-white/90">{revScore || 0}%</span>
+              </div>
+            </div>
+          )}
+          {revMode === 'rating' && (
+            <div className="space-y-2">
+              <label className="block text-sm font-medium mb-1 text-white/90">Rating Band</label>
+              <select
+                className="w-full p-2 border border-white/50 rounded bg-white/30 text-gray-900"
+                value={revRatingBand}
+                onChange={(e)=>{
+                  setRevRatingBand(e.target.value);
+                  setRevRatingValue('');
+                }}
+              >
+                <option value="">-- Select Rating --</option>
+                <option value="95-100">Outstanding – 95-100</option>
+                <option value="90-95">Excellent – 90-95</option>
+                <option value="85-90">Very Good – 85-90</option>
+                <option value="80-85">Good – 80-85</option>
+                <option value="75-80">Fair – 75-80</option>
+                <option value="70-75">Needs Improvement – 70-75</option>
+                <option value="65-70">Poor – 65-70</option>
+                <option value="0-65">Unacceptable – below 65</option>
+              </select>
+              <button
+                type="button"
+                className="px-3 py-2 rounded bg-indigo-600 text-white disabled:opacity-50 text-sm"
+                disabled={!revRatingBand}
+                onClick={()=>{
+                  setRevRatingModalOpen(true);
+                  setRevRatingValue('');
+                }}
+              >
+                {revRatingValue ? `Edit Score (${revRatingValue})` : 'Set Score in Selected Range'}
+              </button>
+              {revRatingValue && (
+                <div className="text-xs text-white/80">Selected score: {revRatingValue}</div>
+              )}
+            </div>
+          )}
           <div className="md:col-span-2">
             <div className="flex items-center justify-between">
               <label className="block text-sm font-medium mb-1 text-white/90">Comments</label>
@@ -1565,7 +1658,23 @@ export default function ManagerDashboard() {
           </div>
         </div>
         <div className="flex justify-end mb-6">
-          <button onClick={submitReview} className="px-4 py-2 rounded bg-indigo-600 text-white disabled:opacity-50" disabled={!revKraId || !revEmployeeId || revScore===''}>Add Review</button>
+          <button
+            onClick={()=>{
+              if (revMode === 'rating' && revRatingValue) {
+                setRevScore(String(revRatingValue));
+              }
+              submitReview();
+            }}
+            className="px-4 py-2 rounded bg-indigo-600 text-white disabled:opacity-50"
+            disabled={
+              !revKraId ||
+              !revEmployeeId ||
+              (revMode === 'percentage' && revScore === '') ||
+              (revMode === 'rating' && !revRatingValue)
+            }
+          >
+            Add Review
+          </button>
         </div>
         <div>
           <h4 className="font-semibold mb-2 text-white">KPIs for selected KRA {revEmployeeId? '(Filtered by employee)': ''}</h4>
@@ -1848,16 +1957,23 @@ export default function ManagerDashboard() {
 
         {/* Edit Review Modal */}
         {revEditOpen && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-            <div className="bg-white/20 backdrop-blur-md border border-white/30 w-full max-w-md rounded-lg shadow-xl p-6 text-white">
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+            <div className="bg-gray-900/80 backdrop-blur-md border border-white/30 text-white w-full max-w-md rounded shadow-lg p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-white">Update Review</h3>
-                <button onClick={()=>setRevEditOpen(false)} className="text-white/80 hover:text-white text-2xl font-bold">✕</button>
+                <button onClick={()=>setRevEditOpen(false)} className="text-gray-300 hover:text-white">✕</button>
               </div>
               <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-white/90">Score (0-100)</label>
-                  <input type="number" min="0" max="100" className="w-full p-2 border border-white/50 rounded bg-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white" value={revEditForm.score} onChange={(e)=>setRevEditForm(prev=>({ ...prev, score: e.target.value }))} />
+                  <label className="block text-sm font-medium mb-1 text-white/90">Score (read-only)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    className="w-full p-2 border border-white/50 rounded bg-white/10 text-white cursor-not-allowed"
+                    value={revEditForm.score}
+                    readOnly
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1 text-white/90">Comment</label>
@@ -2126,6 +2242,77 @@ export default function ManagerDashboard() {
               </div>
               <div className="flex justify-end gap-2 mt-4">
                 <button onClick={()=>setOvB5FilterOpen(false)} className="px-4 py-2 rounded text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">Close</button>
+              </div>
+            </div>
+          </div>
+        )}
+        {revRatingModalOpen && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999]">
+            <div className="bg-gray-900/80 backdrop-blur-md border border-white/30 text-white w-full max-w-sm rounded shadow-lg p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-white">Set Score in Rating Range</h3>
+                <button
+                  onClick={()=>{
+                    setRevRatingModalOpen(false);
+                  }}
+                  className="text-gray-300 hover:text-white"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="space-y-3">
+                <div className="text-sm text-white/80">
+                  Selected band: {
+                    revRatingBand === '95-100' ? 'Outstanding – 95-100' :
+                    revRatingBand === '90-95' ? 'Excellent – 90-95' :
+                    revRatingBand === '85-90' ? 'Very Good – 85-90' :
+                    revRatingBand === '80-85' ? 'Good – 80-85' :
+                    revRatingBand === '75-80' ? 'Fair – 75-80' :
+                    revRatingBand === '70-75' ? 'Needs Improvement – 70-75' :
+                    revRatingBand === '65-70' ? 'Poor – 65-70' :
+                    revRatingBand === '0-65' ? 'Unacceptable – below 65' :
+                    '-'
+                  }
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-white/90">Score</label>
+                  <input
+                    type="number"
+                    className="w-full p-2 border border-white/50 rounded bg-white/20 text-white"
+                    value={revRatingValue}
+                    onChange={(e)=>{
+                      const v = e.target.value;
+                      setRevRatingValue(v);
+                    }}
+                  />
+                  <div className="mt-1 text-xs text-white/70">Enter a value within the selected range.</div>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 mt-4">
+                <button
+                  onClick={()=>setRevRatingModalOpen(false)}
+                  className="px-4 py-2 rounded border border-white/50 text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={()=>{
+                    const [minStr, maxStr] = revRatingBand === '0-65' ? ['0', '65'] : (revRatingBand || '0-100').split('-');
+                    const min = Number(minStr);
+                    const max = Number(maxStr);
+                    const num = Number(revRatingValue);
+                    if (Number.isNaN(num) || num < min || num > max) {
+                      alert(`Please enter a score only within the selected rating range (${min} to ${max}). If you need a different value, change the rating band first.`);
+                      return;
+                    }
+                    setRevRatingValue(String(num));
+                    setRevRatingModalOpen(false);
+                  }}
+                  className="px-4 py-2 rounded bg-indigo-600 text-white disabled:opacity-50"
+                  disabled={!revRatingBand || revRatingValue === ''}
+                >
+                  Apply
+                </button>
               </div>
             </div>
           </div>
