@@ -74,6 +74,8 @@ export class KpiService {
       scoring_method,
       target: typeof target === 'number' ? target : null,
       created_by: userDetails.name,
+      dept: userDetails.dept ?? null,
+      role: userDetails.role ?? null,
       kpi_status: (new Date(String(due_date)) < new Date(new Date().toDateString())) ? 'End' : 'Active',
     }) as Kpi;
 

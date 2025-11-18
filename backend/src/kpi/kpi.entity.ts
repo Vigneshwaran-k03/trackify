@@ -27,6 +27,12 @@ export class Kpi {
   @Column({ type: 'float', nullable: true })
   target: number | null;
 
+  @Column({ type: 'varchar', length: 191, nullable: true })
+  dept: string | null;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  role: string | null;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 

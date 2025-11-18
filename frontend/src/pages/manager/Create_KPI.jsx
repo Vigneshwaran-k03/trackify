@@ -21,6 +21,8 @@ export default function Create_KPI_Manager() {
   const [editForm, setEditForm] = useState({ name: '', def: '', due_date: '', scoring_method: '', target: '', comment: '' });
   const [admins, setAdmins] = useState([]);
   const [adminSelect, setAdminSelect] = useState({ open: false, mode: '', kpi: null, approver: '' }); // mode: 'change' | 'delete'
+  const [userDept, setUserDept] = useState('');
+  const [userRole, setUserRole] = useState('');
   const selectedKra = kras.find(k => String(k.kra_id) === String(form.kra_id));
 
   // [LOGIC UNCHANGED]
@@ -33,6 +35,22 @@ export default function Create_KPI_Manager() {
     }
     fetchAvailableKras();
     fetchMyKpis(statusFilter);
+    // Load manager profile to show dept and role in KPI form
+    (async () => {
+      try {
+        const res = await axios.get('http://localhost:3000/auth/profile', {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        });
+        const profile = res.data?.user || res.data || {};
+        const dept = profile.dept || profile.department || profile.dept_name || '';
+        const r = profile.role || role || 'Manager';
+        setUserDept(dept || '');
+        setUserRole(r || 'Manager');
+      } catch (_) {
+        setUserDept('');
+        setUserRole(role || 'Manager');
+      }
+    })();
     (async () => {
       try {
         const res = await axios.get('http://localhost:3000/users/admins', { headers: { Authorization: `Bearer ${getToken()}` } });
@@ -186,6 +204,8 @@ export default function Create_KPI_Manager() {
         ...form,
         kra_id: parseInt(form.kra_id, 10),
         target: form.target === '' ? null : Number(form.target),
+        dept: userDept || undefined,
+        role: userRole || 'Manager',
       }, {
         headers: {
           Authorization: `Bearer ${getToken()}`,
@@ -380,6 +400,26 @@ export default function Create_KPI_Manager() {
                   {selectedKra && (
                     <p className="text-xs text-gray-300 mt-1">KRA Target: {typeof selectedKra.target === 'number' ? `${selectedKra.target}%` : '-'}</p>
                   )}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-200 mb-1">Department</label>
+                    <input
+                      type="text"
+                      className="w-full p-2 border border-gray-400 rounded text-white bg-white/5"
+                      value={userDept || ''}
+                      readOnly
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-200 mb-1">Role</label>
+                    <input
+                      type="text"
+                      className="w-full p-2 border border-gray-400 rounded text-white bg-white/5"
+                      value={userRole || 'Manager'}
+                      readOnly
+                    />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-200 mb-1">Due Date *</label>

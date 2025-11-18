@@ -18,6 +18,8 @@ export default function Create_KPI_Employee() {
   const [editModal, setEditModal] = useState({ open: false, kpi: null });
   const [editForm, setEditForm] = useState({ name: '', def: '', due_date: '', scoring_method: '', target: '', comment: '' });
   const selectedKra = kras.find(k => String(k.kra_id) === String(form.kra_id));
+  const [userDept, setUserDept] = useState('');
+  const [userRole, setUserRole] = useState('');
 
   useEffect(() => {
     const token = getToken();
@@ -28,6 +30,22 @@ export default function Create_KPI_Employee() {
     }
     fetchAvailableKras();
     fetchMyKpis(statusFilter);
+    // Load employee profile to show dept and role in KPI form
+    (async () => {
+      try {
+        const res = await axios.get('http://localhost:3000/auth/profile', {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        });
+        const profile = res.data?.user || res.data || {};
+        const dept = profile.dept || profile.department || profile.dept_name || '';
+        const r = profile.role || role || 'Employee';
+        setUserDept(dept || '');
+        setUserRole(r || 'Employee');
+      } catch (_) {
+        setUserDept('');
+        setUserRole(role || 'Employee');
+      }
+    })();
   }, []);
 
   const fetchAvailableKras = async () => {
@@ -115,6 +133,8 @@ export default function Create_KPI_Employee() {
         ...form,
         kra_id: parseInt(form.kra_id, 10),
         target: form.target === '' ? null : Number(form.target),
+        dept: userDept || undefined,
+        role: userRole || 'Employee',
       }, {
         headers: {
           Authorization: `Bearer ${getToken()}`,
@@ -257,6 +277,26 @@ export default function Create_KPI_Employee() {
                     <option value="Scale (1-10)">Scale (1-10)</option>
                     <option value="Rating">Rating</option>
                   </select>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-100">Department</label>
+                    <input
+                      type="text"
+                      className="w-full p-2 border border-white/30 rounded bg-white/80 text-black"
+                      value={userDept || ''}
+                      readOnly
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-100">Role</label>
+                    <input
+                      type="text"
+                      className="w-full p-2 border border-white/30 rounded bg-white/80 text-black"
+                      value={userRole || 'Employee'}
+                      readOnly
+                    />
+                  </div>
                 </div>
                 <div className="flex items-center justify-end gap-2 pt-2">
                   <button type="button" className="px-4 py-2 rounded border border-white/30 text-white hover:bg-white/10" onClick={()=>setShowModal(false)}>Cancel</button>

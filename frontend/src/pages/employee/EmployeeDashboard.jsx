@@ -29,6 +29,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarEleme
 export default function EmployeeDashboard() {
   const [userName, setUserName] = useState('');
   const [userDept, setUserDept] = useState('');
+  const [userEmail, setUserEmail] = useState('');
   const [userId, setUserId] = useState(0);
   const [myKPIs, setMyKPIs] = useState([]);
   const [myTasks, setMyTasks] = useState([]);
@@ -307,9 +308,13 @@ export default function EmployeeDashboard() {
       const response = await axios.get('http://localhost:3000/auth/profile', {
         headers: { Authorization: `Bearer ${getToken()}` }
       });
-      setUserDept(response.data.dept);
-      if (response.data?.user_id) setUserId(response.data.user_id);
-      else if (response.data?.id) setUserId(response.data.id);
+      const profile = response.data?.user || response.data || {};
+      const dept = profile.dept || profile.department || profile.dept_name || '';
+      setUserDept(dept);
+      const email = profile.email || profile.email_id || profile.username || '';
+      setUserEmail(email);
+      if (profile?.user_id) setUserId(profile.user_id);
+      else if (profile?.id) setUserId(profile.id);
     } catch (error) {
       console.error('Error fetching user profile:', error);
       if (error?.response?.status === 401) logoutAndRedirect();
@@ -1568,6 +1573,267 @@ export default function EmployeeDashboard() {
           {perfReviews.length===0 && (
             <div className="text-gray-200">No comments for this month.</div>
           )}
+        </div>
+      </div>
+    ),
+summary: (
+      <div id="employee-summary-section" className="space-y-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-semibold text-white">Summary</h3>
+          <button
+            className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500 disabled:opacity-50"
+            onClick={() => exportSectionById('employee-summary-section','employee-summary','pdf')}
+          >
+            Export PDF
+          </button>
+        </div>
+
+        {/* Employee details (profile style similar to manager summary) */}
+        <div className="bg-white/10 backdrop-blur-md rounded-lg p-4 md:p-5 shadow border border-white/20 text-white">
+          <div className="text-sm text-gray-300 mb-1">Employee</div>
+          <div className="text-lg font-semibold truncate">{userName || '-'}</div>
+          <div className="text-xs text-white mt-1 truncate">Email: {userEmail || '-'}</div>
+          <div className="text-xs text-white mt-1 truncate">Department: {userDept || '-'}</div>
+          <div className="text-xs text-white mt-1">Total KRAs: {allKras.length}</div>
+        </div>
+
+        {/* Trend + My Performance charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Employee Trend Analysis */}
+          <div className="bg-white/10 backdrop-blur-md rounded-lg p-4 md:p-5 shadow relative overflow-hidden border border-white/20" id="employee-summary-trend">
+            <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(1000px 400px at 20% -10%, rgba(0,255,255,0.10), transparent), radial-gradient(800px 300px at 120% 20%, rgba(0,128,255,0.12), transparent), radial-gradient(1000px 500px at 50% 120%, rgba(0,255,128,0.08), transparent)' }} />
+            <div className="relative flex items-center justify-between mb-3">
+              <div>
+                <div className="text-sm text-cyan-200">Trend Analysis</div>
+                <div className="text-white text-lg font-semibold">My Performance — {empTrendYear}</div>
+              </div>
+            </div>
+            <div className="relative h-44 md:h-52">
+              {(() => {
+                const fallbackLabels = Array.from({ length: 12 }, (_, i) => new Date(2000, i, 1).toLocaleString(undefined, { month: 'short' }));
+                const labels = (empTrend.labels && empTrend.labels.length) ? empTrend.labels : fallbackLabels;
+                const values = (empTrend.values && empTrend.values.length) ? empTrend.values : Array.from({ length: 12 }, () => 0);
+                return (
+                  <Line
+                    data={{
+                      labels,
+                      datasets: [{
+                        label: 'Avg %',
+                        data: values,
+                        fill: true,
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        tension: 0.35,
+                        segment: {
+                          borderColor: ctx => {
+                            const a = ctx?.p0?.parsed?.y; const b = ctx?.p1?.parsed?.y; if (typeof a !== 'number' || typeof b !== 'number') return '#60a5fa';
+                            return b >= a ? '#22c55e' : '#ef4444';
+                          },
+                          backgroundColor: ctx => {
+                            const a = ctx?.p0?.parsed?.y; const b = ctx?.p1?.parsed?.y; const base = b >= a ? 'rgba(34,197,94,0.18)' : 'rgba(239,68,68,0.14)';
+                            return base;
+                          }
+                        },
+                      }]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: { legend: { display: false }, tooltip: { intersect: false, mode: 'index' } },
+                      scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { color: '#cbd5e1' } },
+                        y: { suggestedMin: 0, suggestedMax: 100, grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { color: '#cbd5e1' } }
+                      },
+                      animation: { duration: 0 }
+                    }}
+                  />
+                );
+              })()}
+            </div>
+          </div>
+
+          {/* My Performance (Reviews) */}
+          <div className="bg-white/20 backdrop-blur-md p-4 rounded-lg shadow-xl border border-white/20" id="employee-summary-my-performance">
+            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+              <h4 className="font-medium text-white">My Performance (Reviews)</h4>
+            </div>
+            {(() => {
+              const labels = perfKraSeries.labels;
+              const values = perfKraSeries.values;
+              const options = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                  x: { ticks: { color: '#FFF' } },
+                  y: { ticks: { color: '#FFF' } }
+                }
+              };
+              if (!labels.length) return <div className="text-gray-200">No reviews for the selected month.</div>;
+              return (
+                <div className="h-40 md:h-48">
+                  <Bar data={{ labels, datasets: [{ label: 'Avg Score', data: values, backgroundColor: 'rgba(59,130,246,0.5)', borderColor: '#3b82f6' }] }} options={options} />
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+
+        {/* KRA & KPI charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* KRA Scores */}
+          <div className="bg-white/20 backdrop-blur-md p-4 rounded-lg shadow-xl border border-white/20" id="employee-summary-kra-chart">
+            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+              <h4 className="font-medium text-white">KRA Scores</h4>
+            </div>
+            {(() => {
+              const today = new Date(); today.setHours(0,0,0,0);
+              const active = myKPIs.filter(k=> !k.due_date || new Date(k.due_date) >= today);
+              const labels = allKras.map(k=>k.name);
+              const values = allKras.map(k=>{
+                const arr = active.filter(x=> String(x.kra_id)===String(k.kra_id)).map(x=> typeof x.progress==='number'? x.progress:0);
+                if (!arr.length) return 0; return Math.round(arr.reduce((a,b)=>a+b,0)/arr.length);
+              });
+              const options = {
+                responsive:true,
+                plugins:{ legend:{ display:false } },
+                scales: { x: { ticks: { color: '#FFF' } }, y: { ticks: { color: '#FFF' } } }
+              };
+              if (!labels.length) return <div className="text-gray-200">No KRA data.</div>;
+              return (
+                <Bar data={{ labels, datasets:[{ label:'Overall %', data: values, backgroundColor:'rgba(59,130,246,0.5)', borderColor:'#3b82f6' }] }} options={options} />
+              );
+            })()}
+          </div>
+
+          {/* KPI Scores (all active KPIs) */}
+          <div className="bg-white/20 backdrop-blur-md p-4 rounded-lg shadow-xl border border-white/20" id="employee-summary-kpi-chart">
+            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+              <h4 className="font-medium text-white">KPI Scores (All Active KPIs)</h4>
+            </div>
+            {(() => {
+              const today = new Date(); today.setHours(0,0,0,0);
+              const active = myKPIs.filter(k=> !k.due_date || new Date(k.due_date) >= today);
+              const labels = active.map(k=>k.name);
+              const values = active.map(k=> typeof k.progress==='number'? k.progress:0);
+              const options = {
+                responsive:true,
+                plugins:{ legend:{ display:false } },
+                scales: { x: { ticks: { color: '#FFF' } }, y: { ticks: { color: '#FFF' } } }
+              };
+              if (!labels.length) return <div className="text-gray-200">No KPI data.</div>;
+              return (
+                <Bar data={{ labels, datasets:[{ label:'%', data: values, backgroundColor:'rgba(234,88,12,0.4)', borderColor:'rgb(234,88,12)' }] }} options={options} />
+              );
+            })()}
+          </div>
+        </div>
+
+        {/* Tables: KRAs, KPIs, Manager reviews */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          {/* KRA details table */}
+          <div className="bg-white/10 backdrop-blur-md rounded-lg shadow border border-white/20 p-4" id="employee-summary-kra-table">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="font-medium text-white">KRA Details</h4>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/20 text-left text-gray-200">
+                    <th className="py-2 pr-3">KRA</th>
+                    <th className="py-2 pr-3">Target %</th>
+                    <th className="py-2 pr-3">Overall %</th>
+                  </tr>
+                </thead>
+                <tbody className="text-gray-100">
+                  {allKras.map(k => {
+                    const agg = kraAggregates[k.kra_id] ?? 0;
+                    return (
+                      <tr key={k.kra_id} className="border-b border-white/10">
+                        <td className="py-2 pr-3">{k.name}</td>
+                        <td className="py-2 pr-3">{typeof k.target === 'number' ? `${k.target}%` : '-'}</td>
+                        <td className="py-2 pr-3">{agg}%</td>
+                      </tr>
+                    );
+                  })}
+                  {allKras.length === 0 && (
+                    <tr><td className="py-3 text-gray-300" colSpan={3}>No KRAs available.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* KPI details table */}
+          <div className="bg-white/10 backdrop-blur-md rounded-lg shadow border border-white/20 p-4" id="employee-summary-kpi-table">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="font-medium text-white">KPI Details</h4>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/20 text-left text-gray-200">
+                    <th className="py-2 pr-3">KPI</th>
+                    <th className="py-2 pr-3">KRA</th>
+                    <th className="py-2 pr-3">Target %</th>
+                    <th className="py-2 pr-3">Progress %</th>
+                    <th className="py-2 pr-3">Due Date</th>
+                  </tr>
+                </thead>
+                <tbody className="text-gray-100">
+                  {myKPIs.map(k => {
+                    const kra = allKras.find(x => String(x.kra_id)===String(k.kra_id));
+                    return (
+                      <tr key={k.id} className="border-b border-white/10">
+                        <td className="py-2 pr-3">{k.name}</td>
+                        <td className="py-2 pr-3">{kra?.name || k.kra_name || '-'}</td>
+                        <td className="py-2 pr-3">{typeof k.target === 'number' ? `${k.target}%` : '-'}</td>
+                        <td className="py-2 pr-3">{typeof k.progress === 'number' ? `${k.progress}%` : '-'}</td>
+                        <td className="py-2 pr-3">{k.due_date ? new Date(k.due_date).toLocaleDateString() : '-'}</td>
+                      </tr>
+                    );
+                  })}
+                  {myKPIs.length === 0 && (
+                    <tr><td className="py-3 text-gray-300" colSpan={5}>No KPIs available.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        {/* Manager reviews table */}
+        <div className="grid grid-cols-1 gap-6">
+          <div className="bg-white/10 backdrop-blur-md rounded-lg shadow border border-white/20 p-4" id="employee-summary-review-table">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="font-medium text-white">Manager Reviews</h4>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/20 text-left text-gray-200">
+                    <th className="py-2 pr-3">KRA</th>
+                    <th className="py-2 pr-3">Score %</th>
+                    <th className="py-2 pr-3">Comment</th>
+                    <th className="py-2 pr-3">Reviewed At</th>
+                  </tr>
+                </thead>
+                <tbody className="text-gray-100">
+                  {perfReviews.map(r => (
+                    <tr key={r.id} className="border-b border-white/10">
+                      <td className="py-2 pr-3">{r.kra_name || '-'}</td>
+                      <td className="py-2 pr-3">{typeof r.score === 'number' ? r.score : (r.score ?? '-')}</td>
+                      <td className="py-2 pr-3"><span dangerouslySetInnerHTML={{ __html: r.comment ? renderCommentHtml(r.comment) : '-' }} /></td>
+                      <td className="py-2 pr-3">{r.review_at ? new Date(r.review_at).toLocaleDateString() : '-'}</td>
+                    </tr>
+                  ))}
+                  {perfReviews.length === 0 && (
+                    <tr><td className="py-3 text-gray-300" colSpan={4}>No reviews available.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     ),

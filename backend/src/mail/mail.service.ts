@@ -4,7 +4,7 @@ import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class MailService {
-  private readonly logger = new Logger(MailService.name);
+  private readonly logger =  new Logger(MailService.name);
   private transporter: nodemailer.Transporter | null = null;
   private from: string = '';
 
@@ -13,7 +13,7 @@ export class MailService {
     const port = parseInt(this.config.get<string>('SMTP_PORT') ?? '587', 10);
     const user = this.config.get<string>('SMTP_USER');
     const pass = this.config.get<string>('SMTP_PASS');
-    this.from = this.config.get<string>('SMTP_FROM') || (user || 'no-reply@example.com');
+    this.from = this.config.get<string>('SMTP_FROM') || (user) || 'no-reply@example.com';
 
     if (host && user && pass) {
       this.transporter = nodemailer.createTransport({
@@ -27,7 +27,7 @@ export class MailService {
     }
   }
 
-  async sendMail(opts: { to: string; subject: string; html?: string; text?: string; }): Promise<boolean> {
+  async sendMail(opts: { to: string; subject: string; html?: string; text?: string; attachments?: { filename: string; content: Buffer | Uint8Array; contentType?: string; }[]; }): Promise<boolean> {
     try {
       if (!this.transporter) {
         this.logger.warn(`No transporter; skip mail to ${opts.to} (${opts.subject})`);
@@ -39,6 +39,7 @@ export class MailService {
         subject: opts.subject,
         text: opts.text,
         html: opts.html,
+        attachments: opts.attachments,
       });
       return true;
     } catch (e: any) {

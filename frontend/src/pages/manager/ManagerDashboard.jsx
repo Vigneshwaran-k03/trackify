@@ -26,6 +26,7 @@ export default function ManagerDashboard() {
   ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend);
   const [userName, setUserName] = useState('');
   const [userDept, setUserDept] = useState('');
+  const [userEmail, setUserEmail] = useState('');
   const [teamMembers, setTeamMembers] = useState([]);
   const [departmentKRAs, setDepartmentKRAs] = useState([]);
   const [myKras, setMyKras] = useState([]);
@@ -352,9 +353,10 @@ export default function ManagerDashboard() {
     fetchDepartmentKRAs();
   }, [userDept]);
 
-  // Ensure My Reviews list loads when navigating to the Review section
+  // Ensure My Reviews list is available for Review and Summary (Employees & Performance)
   useEffect(() => {
-    if (activeSection === 'review') {
+    // Load once on mount and also whenever switching to summary or review
+    if (activeSection === 'review' || activeSection === 'summary') {
       fetchMyReviews();
     }
   }, [activeSection]);
@@ -367,6 +369,8 @@ export default function ManagerDashboard() {
       const profile = response.data?.user || response.data || {};
       const dept = profile.dept || profile.department || profile.dept_name || '';
       setUserDept(dept);
+      const email = profile.email || profile.email_id || profile.username || '';
+      setUserEmail(email);
       if (profile?.user_id) setUserId(profile.user_id); else if (profile?.id) setUserId(profile.id);
     } catch (error) {
       console.error('Error fetching user profile:', error);
@@ -900,8 +904,6 @@ export default function ManagerDashboard() {
     },
     animation: { duration: 0 }
   };
-
-
   const sections = {
     overview: (
       <div>
@@ -1768,7 +1770,330 @@ export default function ManagerDashboard() {
         </div>
       </div>
     ),
+ summary: (
+      <div id="manager-summary-section" className="space-y-6 bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-6 border border-white/20 text-white mb-8">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <h3 className="text-xl font-semibold text-white">Summary</h3>
+          <button
+            className="px-3 py-2 rounded text-white bg-gradient-to-r from-blue-800 to-blue-500 disabled:opacity-50"
+            onClick={() => exportSectionById('manager-summary-section','manager-summary','pdf')}
+          >
+            Export PDF
+          </button>
+        </div>
 
+        {/* Manager profile + quick stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div className="border border-white/20 rounded p-4 bg-white/5 col-span-1 md:col-span-1">
+            <div className="text-sm text-gray-300 mb-1">Manager</div>
+            <div className="text-lg font-semibold text-white truncate">{userName || '-'}</div>
+            <div className="text-xs text-white mt-1 truncate">Email: {userEmail || '-'}</div>
+            <div className="text-xs text-white mt-1 truncate">Department: {userDept || '-'}</div>
+          </div>
+          <div className="border border-white/20 rounded p-4 bg-white/5">
+            <div className="text-sm text-gray-300 mb-1">This Month Avg (Reviews)</div>
+            <div className="text-2xl font-semibold text-white">{(() => {
+              const arr = (perfReviews||[]).map(r => (typeof r.score === 'number' ? r.score : Number(r.score || 0))).filter(v => !Number.isNaN(v));
+              if (!arr.length) return '-';
+              const avg = Math.round((arr.reduce((a,b)=>a+b,0)/arr.length)*100)/100;
+              return `${avg}%`;
+            })()}</div>
+            <div className="text-xs text-gray-400 mt-1">Based on reviews received for the selected month</div>
+          </div>
+          <div className="border border-white/20 rounded p-4 bg-white/5">
+            <div className="text-sm text-gray-300 mb-1">Team Members</div>
+            <div className="text-2xl font-semibold text-white">{teamMembers.length}</div>
+            <div className="text-xs text-gray-400 mt-1">Employees in your department</div>
+          </div>
+        </div>
+
+        {/* Trend + KRA Performance charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Manager Trend */}
+          <div id="manager-summary-trend" className="bg-white/10 backdrop-blur-md rounded-lg p-4 shadow-lg border border-white/20 relative overflow-hidden min-h-[260px]">
+            <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(800px 300px at 20% -10%, rgba(0,255,255,0.10), transparent), radial-gradient(600px 250px at 120% 20%, rgba(0,128,255,0.12), transparent)' }} />
+            <div className="relative flex items-center justify-between mb-3">
+              <div>
+                <div className="text-sm text-cyan-200">Trend Analysis</div>
+                <div className="text-white text-lg font-semibold">My Performance — {trendYear}</div>
+              </div>
+            </div>
+            <div className="relative h-48 md:h-52">
+              {(() => {
+                const fallbackLabels = Array.from({ length: 12 }, (_, i) => new Date(2000, i, 1).toLocaleString(undefined, { month: 'short' }));
+                const labels = (mgrTrend.labels && mgrTrend.labels.length) ? mgrTrend.labels : fallbackLabels;
+                const values = (mgrTrend.values && mgrTrend.values.length) ? mgrTrend.values : Array.from({ length: 12 }, () => 0);
+                return (
+                  <Line
+                    data={{
+                      labels,
+                      datasets: [{
+                        label: 'Avg %',
+                        data: values,
+                        fill: true,
+                        borderWidth: 2,
+                        pointRadius: 2,
+                        pointHoverRadius: 4,
+                        tension: 0.35,
+                        borderColor: '#22c55e',
+                        backgroundColor: 'rgba(34,197,94,0.18)'
+                      }]}}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: { legend: { display: false }, tooltip: { intersect: false, mode: 'index', backgroundColor: '#1f2937' } },
+                      scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { color: '#cbd5e1' } },
+                        y: { suggestedMin: 0, suggestedMax: 100, grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { color: '#cbd5e1' } }
+                      },
+                      animation: { duration: 0 }
+                    }}
+                  />
+                );
+              })()}
+            </div>
+          </div>
+
+          {/* Manager KRA Performance (Reviews) */}
+          <div className="bg-white/10 backdrop-blur-md rounded-lg p-4 shadow-lg border border-white/20 min-h-[260px]">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="font-medium text-white">Manager KRA Performance (Reviews)</h4>
+            </div>
+            {perfKraSeries.labels.length ? (
+              <div className="h-48 md:h-52">
+                <Bar
+                  data={{
+                    labels: perfKraSeries.labels,
+                    datasets:[{ label: 'Avg Score', data: perfKraSeries.values, backgroundColor:'rgba(165, 180, 252, 0.3)', borderColor:'#a5b4fc', borderWidth: 1 }]
+                  }}
+                  options={lightOnDarkOptions}
+                />
+              </div>
+            ) : (
+              <div className="text-white/70 text-sm">No reviews for the selected month.</div>
+            )}
+          </div>
+        </div>
+
+        {/* KRA and KPI charts (manager view) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white/10 backdrop-blur-md rounded-lg p-4 shadow-lg border border-white/20 min-h-[260px]">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="font-medium text-white">KRA Scores (Assigned to Me)</h4>
+            </div>
+            {(() => {
+              const me = String(userName||'').toLowerCase();
+              const today = new Date(); today.setHours(0,0,0,0);
+              let assignedKras = (departmentKRAs||[]).filter(k => String(k.manager_name||'').toLowerCase() === me);
+              if (!assignedKras.length) {
+                const mine = (myKPIs||[]).filter(i=> String(i.created_by||'').toLowerCase()===me);
+                const kraIds = Array.from(new Set(mine.map(i=> String(i.kra_id))));
+                assignedKras = kraIds.map(id=> (departmentKRAs||[]).find(k=> String(k.kra_id)===id) || { kra_id:id, name:`KRA ${id}` });
+              }
+              const labels = assignedKras.map(k=> resolveKraName(k.kra_id));
+              const values = assignedKras.map(k=>{
+                const kpis = (myKPIs||[]).filter(i=> String(i.kra_id)===String(k.kra_id));
+                const mine = kpis.filter(i=> String(i.created_by||'').toLowerCase()===me);
+                const base = mine.length? mine: kpis;
+                const active = base.filter(i=> !i.due_date || new Date(i.due_date) >= today || String(i.kpi_status||'').toLowerCase()==='active');
+                const arr = active.map(i=> typeof i.percentage==='number'? i.percentage : (typeof i.progress==='number'? i.progress:0));
+                if (!arr.length) return 0; return Math.round(arr.reduce((a,b)=>a+b,0)/arr.length);
+              });
+              if (!labels.length) return (<div className="text-white/70 h-48 flex items-center justify-center text-sm">No KRAs available from your KPIs.</div>);
+              return (
+                <div className="h-48">
+                  <Bar
+                    data={{ labels, datasets:[{ label:'Overall %', data: values, backgroundColor:'rgba(59,130,246,0.5)', borderColor:'#3b82f6', borderWidth: 1 }] }}
+                    options={lightOnDarkOptions}
+                  />
+                </div>
+              );
+            })()}
+          </div>
+
+          <div className="bg-white/10 backdrop-blur-md rounded-lg p-4 shadow-lg border border-white/20 min-h-[260px]">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="font-medium text-white">KPI Scores (Created by Me)</h4>
+            </div>
+            {(() => {
+              const today = new Date(); today.setHours(0,0,0,0);
+              const me = String(userName||'').toLowerCase();
+              const list = (myKPIs||[]).filter(i=> String(i.created_by||'').toLowerCase()===me);
+              const active = list.filter(i=> !i.due_date || new Date(i.due_date) >= today || String(i.kpi_status||'').toLowerCase()==='active');
+              const labels = active.map(i=> i.name);
+              const values = active.map(i=> (typeof i.percentage==='number'? i.percentage : (typeof i.progress==='number'? i.progress:0)));
+              if (!labels.length) return (<div className="text-white/70 h-48 flex items-center justify-center text-sm">No active KPIs created by you.</div>);
+              return (
+                <div className="h-48">
+                  <Bar
+                    data={{ labels, datasets:[{ label:'Score', data: values, backgroundColor:'rgba(16,185,129,0.5)', borderColor:'#10b981', borderWidth: 1 }] }}
+                    options={lightOnDarkOptions}
+                  />
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+
+        {/* Tables: KRA details, KPI details, logs, employees with scores */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          {/* KRA details (assigned by admin to manager) */}
+          <div className="border border-white/20 rounded p-4 bg-white/5">
+            <h4 className="font-medium text-white mb-3">KRA Details (Assigned to Me)</h4>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/20 text-left text-gray-200">
+                    <th className="py-2 pr-3">KRA</th>
+                    <th className="py-2 pr-3">Definition</th>
+                    <th className="py-2 pr-3">Due Date</th>
+                    <th className="py-2 pr-3">Overall %</th>
+                  </tr>
+                </thead>
+                <tbody className="text-gray-100">
+                  {(myKras||[]).map(k => (
+                    <tr key={k.kra_id} className="border-b border-white/10">
+                      <td className="py-2 pr-3">{k.name}</td>
+                      <td className="py-2 pr-3 max-w-xs truncate">{k.definition || k.def || '-'}</td>
+                      <td className="py-2 pr-3">{k.due_date ? new Date(k.due_date).toLocaleDateString() : '-'}</td>
+                      <td className="py-2 pr-3">{(() => {
+                        const today = new Date(); today.setHours(0,0,0,0);
+                        const arr = (myKPIs||[])
+                          .filter(x=> String(x.kra_id)===String(k.kra_id))
+                          .filter(x=> !x.due_date || new Date(x.due_date) >= today || String(x.kpi_status||'').toLowerCase()==='active')
+                          .map(x=> typeof x.progress==='number'? x.progress : (typeof x.percentage==='number'? x.percentage : 0));
+                        const overall = arr.length ? Math.round(arr.reduce((a,b)=>a+b,0)/arr.length) : 0;
+                        return `${overall}%`;
+                      })()}</td>
+                    </tr>
+                  ))}
+                  {(!myKras || !myKras.length) && (
+                    <tr><td className="py-3 text-gray-300" colSpan={4}>No KRAs assigned to you.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* KPI details (created by manager) */}
+          <div className="border border-white/20 rounded p-4 bg-white/5">
+            <h4 className="font-medium text-white mb-3">KPI Details (Created by Me)</h4>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/20 text-left text-gray-200">
+                    <th className="py-2 pr-3">KPI</th>
+                    <th className="py-2 pr-3">KRA</th>
+                    <th className="py-2 pr-3">Target %</th>
+                    <th className="py-2 pr-3">Score %</th>
+                    <th className="py-2 pr-3">Due Date</th>
+                  </tr>
+                </thead>
+                <tbody className="text-gray-100">
+                  {(() => {
+                    const me = String(userName||'').toLowerCase();
+                    const list = (myKPIs||[]).filter(k => String(k.created_by||'').toLowerCase() === me);
+                    return list.map(k => (
+                      <tr key={k.id} className="border-b border-white/10">
+                        <td className="py-2 pr-3">{k.name}</td>
+                        <td className="py-2 pr-3">{k.kra_name || resolveKraName(k.kra_id)}</td>
+                        <td className="py-2 pr-3">{typeof k.target === 'number' ? `${k.target}%` : '-'}</td>
+                        <td className="py-2 pr-3">{typeof k.progress === 'number' ? `${k.progress}%` : (typeof k.percentage === 'number' ? `${k.percentage}%` : '-')}</td>
+                        <td className="py-2 pr-3">{k.due_date ? new Date(k.due_date).toLocaleDateString() : '-'}</td>
+                      </tr>
+                    ));
+                  })()}
+                  {(() => {
+                    const me = String(userName||'').toLowerCase();
+                    const list = (myKPIs||[]).filter(k => String(k.created_by||'').toLowerCase() === me);
+                    if (!list.length) return (
+                      <tr><td className="py-3 text-gray-300" colSpan={5}>No KPIs created by you.</td></tr>
+                    );
+                    return null;
+                  })()}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* Team performance */}
+        <div className="grid grid-cols-1 gap-6">
+          {/* Employees with performance scores */}
+          <div className="border border-white/20 rounded p-4 bg-white/5">
+            <h4 className="font-medium text-white mb-3">Employees & Performance</h4>
+            <div className="overflow-x-auto max-h-64">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/20 text-left text-gray-200">
+                    <th className="py-2 pr-3">Employee</th>
+                    <th className="py-2 pr-3">Dept</th>
+                    <th className="py-2 pr-3">Avg Score</th>
+                  </tr>
+                </thead>
+                <tbody className="text-gray-100">
+                  {(() => {
+                    if (!teamMembers.length) return (
+                      <tr><td className="py-3 text-gray-300" colSpan={3}>No employees in your team.</td></tr>
+                    );
+                    const byEmp = new Map();
+                    (myReviews||[]).forEach(r => {
+                      const key = String(r.employee_name || '').toLowerCase();
+                      if (!key) return;
+                      if (!byEmp.has(key)) byEmp.set(key, []);
+                      const val = (typeof r.score === 'number' ? r.score : Number(r.score || 0));
+                      if (!Number.isNaN(val)) byEmp.get(key).push(val);
+                    });
+                    return teamMembers.map(emp => {
+                      const key = String(emp.name || '').toLowerCase();
+                      const arr = byEmp.get(key) || [];
+                      const avg = arr.length ? Math.round((arr.reduce((a,b)=>a+b,0)/arr.length)*100)/100 : null;
+                      return (
+                        <tr key={emp.user_id} className="border-b border-white/10">
+                          <td className="py-2 pr-3">{emp.name}</td>
+                          <td className="py-2 pr-3">{emp.dept || emp.department || userDept || '-'}</td>
+                          <td className="py-2 pr-3">{avg === null ? '-' : `${avg}%`}</td>
+                        </tr>
+                      );
+                    });
+                  })()}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Manager Reviews (received from Admin) */}
+          <div className="border border-white/20 rounded p-4 bg-white/5" id="manager-summary-review-table">
+            <h4 className="font-medium text-white mb-3">Manager Reviews (From Admin)</h4>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/20 text-left text-gray-200">
+                    <th className="py-2 pr-3">KRA</th>
+                    <th className="py-2 pr-3">Score %</th>
+                    <th className="py-2 pr-3">Comment</th>
+                    <th className="py-2 pr-3">Reviewed At</th>
+                  </tr>
+                </thead>
+                <tbody className="text-gray-100">
+                  {perfReviews.map(r => (
+                    <tr key={r.id} className="border-b border-white/10">
+                      <td className="py-2 pr-3">{r.kra_name || '-'}</td>
+                      <td className="py-2 pr-3">{typeof r.score === 'number' ? r.score : (r.score ?? '-')}</td>
+                      <td className="py-2 pr-3"><span dangerouslySetInnerHTML={{ __html: r.comment ? renderCommentHtml(r.comment) : '-' }} /></td>
+                      <td className="py-2 pr-3">{r.review_at ? new Date(r.review_at).toLocaleDateString() : '-'}</td>
+                    </tr>
+                  ))}
+                  {perfReviews.length === 0 && (
+                    <tr><td className="py-3 text-gray-300" colSpan={4}>No manager reviews available.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    ),
   };
 
   return (
